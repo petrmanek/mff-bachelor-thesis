@@ -45,6 +45,9 @@
 \usepackage{paralist}       % improved enumerate and itemize
 \usepackage[usenames]{xcolor}  % typesetting in color
 \usepackage{soul}           % HIGHLIGHTER
+\usepackage{minted}         % code listings
+
+\usemintedstyle{xcode}      % syntax highlighting color pallette
 
 %%% Basic information on the thesis
 
@@ -128,7 +131,11 @@ Imitating the process of natural selection, evolutionary algorithms have shown t
 
 %%% Tables used in the thesis (consider if this is needed)
 %%% In mathematical theses, it could be better to move the list of tables to the beginning of the thesis.
-\listoftables
+% \listoftables
+
+%%% Listings used in the thesis (consider if this is needed)
+\listoflistings
+\addcontentsline{toc}{chapter}{List of Listings}
 
 %%% Abbreviations used in the thesis, if any, including their explanation
 %%% In mathematical theses, it could be better to move the list of abbreviations to the beginning of the thesis.

@@ -9,9 +9,9 @@ The question of efficiently encoding solutions into chromosomes is a separate to
 \subsection{Strings}
 One of the most common ways of storing chromosomes is to encode them as strings of values of a same type, e. g. binary or numeric. Such strings are represented by \textit{range-initalized arrays}.
 
-A range-initialized array is similar to a regular array in many ways. It is a generic list structure, which is capable of holding finite amounts of ordered homogoeneous values. However, at the time of initialization, the number of elements in the array is set to a value, which non-deterministically selected from a given interval. This allows for more flexibility, since in some applications, it is beneficial to vary not only the contents on the chromosome, but also its size. If this behavior is not required, the array can be configured to a constant length by using any interval of length zero.
+A range-initialized array is similar to a regular array in many ways. It is a generic list structure, which is capable of holding finite amounts of ordered homogoeneous items. However, at the time of initialization, the number of elements in the array is set to a value, which non-deterministically selected from a given interval. This allows for more flexibility, since in some applications, it is beneficial to vary not only the contents of the chromosome, but also its size. If this behavior is not required, the array can be configured to a constant length by using any interval of length zero.
 
-A simple usage of range-initialized arrays can be demonstrated on the Knapsack Problem. Suppose that there are 10 things of different sizes and values and a knapsack of a limited capacity. The objective is to select things to maximize the value of knapsack contents, while not exceeeding its capacity. All solutions of this problem can be described as strings of 10 Boolean values, indicating whether items 1-10 are selected. These values can be stored in a range-initialized array of size $[10;10]$, which is declared in Listing \ref{listing:array-knapsack}.
+A simple usage of range-initialized arrays can be demonstrated on the Knapsack Problem. Suppose that there are 10 things of different sizes and values and a knapsack of a limited capacity. The objective is to select things to maximize the total value of knapsack contents, while not exceeeding its capacity. All solutions of this problem can be described as strings of 10 Boolean values, indicating whether items 1-10 are selected. These values can be stored in a range-initialized array with interval $[10;10]$ (implying that the array has fixed size 10), which is declared in Listing \ref{listing:array-knapsack}.
 
 \begin{listing}[ht]
 	\inputminted{swift}{../code/array-knapsack.swift}
@@ -19,14 +19,52 @@ A simple usage of range-initialized arrays can be demonstrated on the Knapsack P
 	\label{listing:array-knapsack}
 \end{listing}
 
-In a similar way, range-initialized arrays can store integer tuples to encode permutations or floating-point decimals to describe weights of neural networks. Thanks to Swift extensions, every range-initialized array automatically supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}) and can generate random instances of itself. Range-initialized arrays can thus be directly used as chromosomes in genetic algorithms.
+In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe weights of neural networks. Thanks to Swift extensions, every range-initialized array automatically supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}) and can generate random instances of itself. Range-initialized arrays can thus be directly used as chromosomes in genetic algorithms without any further modification.
 
+It is worth noting at this point that strings are \textbf{not designed to store heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as Booleans, it can be encoded as a binary string, portions of which would be later interpretted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application.
 
+While this approach succeeds in encoding the chromosome into a binary string, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
 
 \subsection{Trees}
-\todo
+Tree structures are commonly used in applications, which require automatic code generation. In such applications, chromosomes often contain control programs or mathematical formulas, which can be represented by tree graphs. The library allows to store such data in a collection of \textit{tree nodes}.
 
-\subsection{Custom Types}
+A tree node is an abstract data structure, which can be configured to contain information of any type. In addition, tree nodes can point to multiple other tree nodes, linking the information they contain together, in order to form a forest. The library offers two basic types of tree nodes:
+~
+\begin{description}
+	\item[Value Nodes (generic)]
+	The purpose of a value node is to produce a value of some kind. While the means of producing the value may differ (e. g. constant, function or binary operation) as well as its type, every value node must offer a way to retrieve its value at runtime.
+
+	\item[Action Nodes]
+	The purpose of an action node is to perform an action at runtime. The action may be a command of some kind, or may call other action, possibly requiring arguments in the form of other value nodes.
+\end{description}
+
+Both types of nodes are easily extensible, allowing users to define their own functions and commands, depending on the application. This can be demonstrated on a simple maze robot simulation. Suppose that there is a robot, which can receive WAIT, GO, STOP, TURN-LEFT and TURN-RIGHT commands, in order to navigate in a 2-dimensional maze. The robot also carries a set of sensors, capable of determining, whether its front side is facing an obstacle. To auto-generate a control program for such robot, its commands can be formalized as 5 action nodes and the sensor output can be represented by a single Boolean value node. Example of such formalization is shown in Listing \ref{listing:tree-maze}.
+
+\begin{listing}[ht]
+	\inputminted{swift}{../code/tree-maze.swift}
+	\caption{Example implementation of the GO command action node.}
+	\label{listing:tree-maze}
+\end{listing}
+
+It is concievable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce elements of such language, \textit{a tree factory} object is required.
+
+Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library offers often used node types, ready to use:
+~
+\begin{description}
+	\item[Constants and Operations]
+	Constant nodes contain a static value of any type, unchanging during program execution. Operation nodes are generic templates for any unary or binary operation applied on a set of value nodes.
+
+	\item[Comparisons]
+	Comparison nodes represent equality and inequality predicates, operating on tuples of other value nodes.
+
+	\item[Arithmetic and Boolean Operations]
+	For any numeric value nodes, addition, subtraction, multiplication, division and modulation are supported. In analogy, Boolean value nodes support negation, conjunction, disjunction, implication and equivalence.
+
+	\item[Control-flow Primitives]
+	Action nodes can be combined in sequences, loops or simple conditional expressions.
+\end{description}
+
+\subsection{Custom Types}\label{section:custom-types}
 \todo
 
 \begin{listing}[ht]

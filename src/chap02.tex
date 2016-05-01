@@ -48,7 +48,7 @@ Both types of nodes are easily extensible, allowing users to define their own fu
 
 It is concievable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce elements of such language, \textit{a tree factory} object is required.
 
-Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library offers often used node types, ready to use:
+Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library offers various frequently used node types, ready to use:
 ~
 \begin{description}
 	\item[Constants and Operations]
@@ -63,6 +63,14 @@ Factories create new randomized instances of tree nodes, and can thus restrict o
 	\item[Control-flow Primitives]
 	Action nodes can be combined in sequences, loops or simple conditional expressions.
 \end{description}
+
+It is recommended that tree factories are instantiated in the global context, or as extensions of entropy generators (see Listing \ref{listing:tree-factory}). Apart from controlling the type of generated nodes, factories allow to control the depth and width of the tree, bounding the number of generated structures.
+
+\begin{listing}[ht]
+	\inputminted{swift}{../code/tree-factory.swift}
+	\caption{Tree factory declared in an extension of entropy generator.}
+	\label{listing:tree-factory}
+\end{listing}
 
 \subsection{Custom Types}\label{section:custom-types}
 \todo

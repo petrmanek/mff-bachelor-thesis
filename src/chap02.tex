@@ -14,7 +14,7 @@ A range-initialized array is similar to a regular array in many ways. It is a ge
 A simple usage of range-initialized arrays can be demonstrated on the Knapsack Problem. Suppose that there are 10 things of different sizes and values and a knapsack of a limited capacity. The objective is to select things to maximize the total value of knapsack contents, while not exceeeding its capacity. All solutions of this problem can be described as strings of 10 Boolean values, indicating whether items 1-10 are selected. These values can be stored in a range-initialized array with interval $[10;10]$ (implying that the array has fixed size 10), which is declared in Listing \ref{listing:array-knapsack}.
 
 \begin{listing}[ht]
-	\inputminted{swift}{../code/array-knapsack.swift}
+	\inputswift{array-knapsack}
 	\caption{Range-initialized array used to solve the Knapsack problem.}
 	\label{listing:array-knapsack}
 \end{listing}
@@ -41,7 +41,7 @@ A tree node is an abstract data structure, which can be configured to contain in
 Both types of nodes are easily extensible, allowing users to define their own functions and commands, depending on the application. This can be demonstrated on a simple maze robot simulation. Suppose that there is a robot, which can receive WAIT, GO, STOP, TURN-LEFT and TURN-RIGHT commands, in order to navigate in a 2-dimensional maze. The robot also carries a set of sensors, capable of determining, whether its front side is facing an obstacle. To auto-generate a control program for such robot, its commands can be formalized as 5 action nodes and the sensor output can be represented by a single Boolean value node. Example of such formalization is shown in Listing \ref{listing:tree-maze}.
 
 \begin{listing}[ht]
-	\inputminted{swift}{../code/tree-maze.swift}
+	\inputswift{tree-maze}
 	\caption{Example implementation of the GO command action node.}
 	\label{listing:tree-maze}
 \end{listing}
@@ -65,7 +65,7 @@ It is concievable that combinations of various tree nodes can be translated into
 It is recommended that tree factories are instantiated in the global context, or as in subclasses of entropy generators (see Listing \ref{listing:tree-factory}). Apart from controlling the type of generated nodes, factories allow to control the depth and width of the tree, bounding the number of generated structures.
 
 \begin{listing}[ht]
-	\inputminted{swift}{../code/tree-factory.swift}
+	\inputswift{tree-factory}
 	\caption{Tree factory declared in an entropy generator subclass.}
 	\label{listing:tree-factory}
 \end{listing}
@@ -91,7 +91,7 @@ Declaration of custom types can be demonstrated on The Hamburger Restaurant Prob
 Clearly every strategy is a heterogeneous data structure. Although it could be encoded into a binary string (as proposed in section \ref{section:strings}), it is much safer and more elegant to declare a dedicated type to hold its information. Such declaration is shown in Listing \ref{listing:hamburger-sample}.
 
 \begin{listing}[ht]
-	\inputminted{swift}{../code/hamburger-sample.swift}
+	\inputswift{hamburger-sample}
 	\caption{Example declaration of custom chromosome type.}
 	\label{listing:hamburger-sample}
 \end{listing}
@@ -101,14 +101,46 @@ Note that in the example declaration, every property is named and strongly-typed
 Lastly, types which are capable of listing all their possible values in a finite sequence can utilize the \texttt{Discrete} protocol, which implements the \texttt{Randomizable} protocol by randomly selecting values from a discrete uniform distribution of all values. A good demonstration of this is the \texttt{Drink} type, which is declared as a Swift enumeration in Listing \ref{listing:discrete-sample}.
 
 \begin{listing}[ht]
-	\inputminted{swift}{../code/discrete-sample.swift}
+	\inputswift{discrete-sample}
 	\caption{Declaration of a randomizable type through a discrete listing of values.}
 	\label{listing:discrete-sample}
 \end{listing}
 
 As shown by the demonstrations, declaration of custom types for heterogeneous chromosomes in Swift is effortless, safe and efficient. However, the reader should not be misled into thinking it only serves as syntax sugar for creating nicely annotated vessels for information. This technique can be also used to create genotype containers with customized behavior and proprietary internal structure, which is most notably exemplified in strings and trees, as both types are implemented in this way.
 
+\section{Population Evaluation}
+In order to assess and compare the quality of chromosomes with respect to the problem at hand, a common fitness evaluation model is used. In this model, every chromosome is assigned a decimal value from the $[0;1]$ interval by a \textit{fitness function}, which is heavily dependent on the application and thus specified by the user. The fitness function is encapsulated in an \textit{evaluator} object, which is active for the entire duration of evaluation.
+
+This approach allows users to possibly speed up the evaluation process by minimizing overhead needed to set up and tear down other components and structures required to perform the evaluation, such as simulation environments, inter-process communication sockets, etc. The library supports evaluation in two modes: sequentially or in parallel. While the sequential mode is easy to implement but more time-consuming, the parallel mode requires the internals of the fitness function to be compatible with multi-threaded processing, which may not always be possible.
+
+To demonstrate implementation of a simple sequential evaluator, recall the chromosome structure\footnote{The Knapsack Problem is defined in section \ref{section:strings}. For chromosome structure, see Listing \ref{listing:array-knapsack}} for the Knapsack Problem. Suppose the fitness function is defined as
+~
+\begin{align}
+	f(c_1, c_2, \dots, c_{10})
+	=
+	\begin{cases} 
+		\hfill 0 \hfill & \text{ if $\sum_{i=1}^{10} c_i s_i>S_{max}$} \\
+		\hfill \sum_{i=1}^{10} c_i v_i / \sum_{i=1}^{10} v_i \hfill & \text{ otherwise} \\
+	\end{cases}
+\end{align}
+~
+where $S_{max}$ represents the maximum capacity of the knapsack, $\{s_i\}_{i=1}^{10}$ are sizes of things, $\{v_i\}_{i=1}^{10}$ are values of things and $\{c_i\}_{i=1}^{10}$ are 0/1 coefficients generated from the Boolean values of the chromosome. A simple implementation of a sequential evaluator using this function is shown in Listing \ref{listing:evaluator-sequential}.
+
+\begin{listing}[ht]
+	\inputswift{evaluator-sequential}
+	\caption{Example of a sequential evaluator for the Knapsack Problem.}
+	\label{listing:evaluator-sequential}
+\end{listing}
+
+In the example, the evaluator is a descendant of \texttt{SequentialEvaluator<T>}, which is a common generic base class for all sequential evaluators. Similarly, all parallel evaluators are descendants of the \texttt{ParallelEvaluator<T>} class, which instantiates multiple sequential evaluators operating on different threads and manages an internal producer-consumer queue to facilitate parallel evaluation of chromosomes. Moreover, both types of evaluators inherit from \texttt{Evaluator<T>}, an abstract class which defines the formal requirements on all evaluator objects.
+
+When implementing fitness evaluation objects, it is recommended that the class \texttt{Evaluator<T>} is directly subclassed only in cases, when the evaluation scheme is incompatible other classes. A good example of such scenario would be an evaluator type, which utilizes a distributed computing cluster. Furthermore, the library offers evaluator types, which enable its users to effortlessly utilize common fitness calculation techniques.
+
+For instance, users can utilize the cyclic evaluator. This type of evaluator encapsulates another evaluator, which is called $N$ times for a single evaluation of every chromosome. From the result, $M$ of the best (or the worst) fitness values are selected. The final fitness of the chromosome is the average calculated from the selected values.
+
 \section{Genetic Operators}\label{section:genetic-operators}
+Genetic operators are transformations, which are applied on chromosomes during the evaluation of genetic algorithm.
+
 \todo
 
 \subsection{Reproduction}

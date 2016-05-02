@@ -136,23 +136,39 @@ In the example, the evaluator is a descendant of \texttt{SequentialEvaluator<T>}
 
 When implementing fitness evaluation objects, it is recommended that the class \texttt{Evaluator<T>} is directly subclassed only in cases, when the evaluation scheme is incompatible other classes. A good example of such scenario would be an evaluator type, which utilizes a distributed computing cluster. Furthermore, the library offers evaluator types, which enable its users to effortlessly utilize common fitness calculation techniques.
 
-For instance, users can utilize the cyclic evaluator. This type of evaluator encapsulates another evaluator, which is called $N$ times for a single evaluation of every chromosome. From the result, $M$ of the best (or the worst) fitness values are selected. The final fitness of the chromosome is the average calculated from the selected values.
+For instance, users can utilize \textit{the cyclic evaluator}. This type of evaluator encapsulates another evaluator, which is called $N$ times for a single evaluation of every chromosome. From the result, $M$ of the best (or the worst) fitness values are selected. The final fitness of the chromosome is the average calculated from the selected values.
 
 \section{Genetic Operators}\label{section:genetic-operators}
-Genetic operators are transformations, which are applied on chromosomes during the evaluation of genetic algorithm.
+Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a genetic algorithm. Every operator can select an arbitrary number of chromosomes in the population and is expected to produce at least one offspring chromosome as a result. The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters when the operators are created. There are various types of selections, each with different properties and effects on the operators (for their detailed description, see section \ref{section:selection}).
+
+The library offers three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to only these three. By creating descendants of \texttt{GeneticOperator<T>}, users are free to implement and experiment with any operators of their own.
+
+\subsection{Reproduction}\label{section:reproduction}
+\todo
+
+\subsection{Mutation}\label{section:mutation}
+The mutation operator serves the desirable function of introducing occasional variety into a population and restoring lost diversity to a population. \cite{Koza1992}
+
+Unlike reproduction, this operator requires all chromosome data structures it works on to conform to the \texttt{Mutable} protocol. Every container thus has its own, slightly different implementation of mutation, which should be described in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
+
+General guidelines for implementing mutation are:
+~
+\begin{enumerate}
+	\item Select one chromosome in the population based on fitness.
+	\item Choose a part of the chromosome at random.
+	\item Copy the chromosome, substituting the chosen part for a randomly generated equivalent.
+	\item Insert the modified chromosome among the offspring.
+\end{enumerate}
 
 \todo
 
-\subsection{Reproduction}
+\subsection{Crossover}\label{section:crossover}
 \todo
 
-\subsection{Mutation}
+\subsection{Pipelines}\label{section:pipelines}
 \todo
 
-\subsection{Crossover}
-\todo
-
-\section{Selections}
+\section{Selections}\label{section:selection}
 \todo
 
 \subsection{Roulette Selection}

@@ -2,14 +2,14 @@
 This chapter is a technical documentation of individual components of the library.
 
 \section{Chromosome Data Structures}
-In the context of genetic algorithms, \textit{a chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. Since the nature and representation of such information depends on the application, the library allows full customization of the underlying data structures. Apart from that, the library also provides implementation of the most frequently used data structures. This leaves users free to decide, whether to use a structure supplied by the library, implement a custom one, or combine multiple data structures together.
+In the context of genetic algorithms, \textit{a chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. Since the nature and representation of such information heavily depends on the application, the library allows full customization of the underlying data structures. Apart from that, the library also provides implementation of the most frequently used data structures. This leaves users free to decide, whether to use a structure supplied by the library, implement a custom one, or combine multiple data structures together.
 
 The question of efficiently encoding solutions into chromosomes is a separate topic, worthy of further investigation. The library is merely intended as a tool to build containers for such chromosomes, once the user's mind is set on a specific method of data representation. This section explains, how to achieve some often used configurations, and how to define custom data types for storing proprietary information.
 
-\subsection{Strings}
+\subsection{Strings}\label{section:strings}
 One of the most common ways of storing chromosomes is to encode them as strings of values of a same type, e. g. binary or numeric. Such strings are represented by \textit{range-initalized arrays}.
 
-A range-initialized array is similar to a regular array in many ways. It is a generic list structure, which is capable of holding finite amounts of ordered homogoeneous items. However, at the time of initialization, the number of elements in the array is set to a value, which non-deterministically selected from a given interval. This allows for more flexibility, since in some applications, it is beneficial to vary not only the contents of the chromosome, but also its size. If this behavior is not required, the array can be configured to a constant length by using any interval of length zero.
+A range-initialized array is similar to a regular array in many ways. It is a generic list structure, which is capable of holding finite amounts of ordered homogeneous items. However, at the time of initialization, the number of elements in the array is set to a value, which non-deterministically selected from a given number interval. This allows for more flexibility, since in some applications, it is beneficial to vary not only the contents of the chromosome, but also its size. If this behavior is not required, the array can be configured to a constant length by using any interval of length zero.
 
 A simple usage of range-initialized arrays can be demonstrated on the Knapsack Problem. Suppose that there are 10 things of different sizes and values and a knapsack of a limited capacity. The objective is to select things to maximize the total value of knapsack contents, while not exceeeding its capacity. All solutions of this problem can be described as strings of 10 Boolean values, indicating whether items 1-10 are selected. These values can be stored in a range-initialized array with interval $[10;10]$ (implying that the array has fixed size 10), which is declared in Listing \ref{listing:array-knapsack}.
 
@@ -19,11 +19,11 @@ A simple usage of range-initialized arrays can be demonstrated on the Knapsack P
 	\label{listing:array-knapsack}
 \end{listing}
 
-In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe weights of neural networks. Thanks to Swift extensions, every range-initialized array automatically supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}) and can generate random instances of itself. Range-initialized arrays can thus be directly used as chromosomes in genetic algorithms without any further modification.
+In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift extensions, every instance of range-initialized array automatically supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}) and can generate random instances of itself. Range-initialized arrays can thus be directly used as chromosomes in genetic algorithms without any further modification.
 
 It is worth noting at this point that strings are \textbf{not designed to store heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as Booleans, it can be encoded as a binary string, portions of which would be later interpretted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application.
 
-While this approach succeeds in encoding the chromosome into a binary string, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
+While this approach succeeds in encoding the chromosome into a binary string, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item in the array, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
 
 \subsection{Trees}
 Tree structures are commonly used in applications, which require automatic code generation. In such applications, chromosomes often contain control programs or mathematical formulas, which can be represented by tree graphs. The library allows to store such data in a collection of \textit{tree nodes}.
@@ -46,9 +46,7 @@ Both types of nodes are easily extensible, allowing users to define their own fu
 	\label{listing:tree-maze}
 \end{listing}
 
-It is concievable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce elements of such language, \textit{a tree factory} object is required.
-
-Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library offers various frequently used node types, ready to use:
+It is concievable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce elements of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library offers various frequently used node types, ready to use:
 ~
 \begin{description}
 	\item[Constants and Operations]
@@ -64,22 +62,51 @@ Factories create new randomized instances of tree nodes, and can thus restrict o
 	Action nodes can be combined in sequences, loops or simple conditional expressions.
 \end{description}
 
-It is recommended that tree factories are instantiated in the global context, or as extensions of entropy generators (see Listing \ref{listing:tree-factory}). Apart from controlling the type of generated nodes, factories allow to control the depth and width of the tree, bounding the number of generated structures.
+It is recommended that tree factories are instantiated in the global context, or as in subclasses of entropy generators (see Listing \ref{listing:tree-factory}). Apart from controlling the type of generated nodes, factories allow to control the depth and width of the tree, bounding the number of generated structures.
 
 \begin{listing}[ht]
 	\inputminted{swift}{../code/tree-factory.swift}
-	\caption{Tree factory declared in an extension of entropy generator.}
+	\caption{Tree factory declared in an entropy generator subclass.}
 	\label{listing:tree-factory}
 \end{listing}
 
 \subsection{Custom Types}\label{section:custom-types}
-\todo
+If the chromosome information is not compatible with strings or trees, or is heterogeneous in its nature, it is recommended that a custom data type is declared to hold it. This allows users to name, document and describe individual parts of the chromosome, as well as to customize its behavior at important points of evaluation.
+
+Any Swift reference type can become a chromosome data structure, if it conforms to the \texttt{Randomizable} protocol. No other protocol conformance is formally required. Nevertheless, it is worth noting that some genetic operators require chromosomes to conform to other proprietary protocols, in order to operate on them. For instance, the \texttt{Mutable} protocol, which allows users to customize the way mutations are applied to the internals of the data structure. For full listing of such protocols, see section \ref{section:genetic-operators}.
+
+Declaration of custom types can be demonstrated on The Hamburger Restaurant Problem, mentioned in the introduction of \cite{Koza1992} (for the purposes of this work, the example has been slightly altered). The objective is to find a business strategy for a chain of hamburger restaurants, which yields the biggest profit. A strategy consists of three decisions:
+~
+\begin{description}
+	\item[Price]
+	What should be the price of the hamburger? Should it be 50 cents, 10 dollars or anywhere in between?
+
+	\item[Drink]
+	What drink should be served with the hamburger? Water, cola or wine?
+
+	\item[Speed of service]
+	Should the restaurant provide slow, leisurely service by waiters in tuxedos or fast, snappy service by waiters in white polyester uniforms?
+\end{description}
+
+Clearly every strategy is a heterogeneous data structure. Although it could be encoded into a binary string (as proposed in section \ref{section:strings}), it is much safer and more elegant to declare a dedicated type to hold its information. Such declaration is shown in Listing \ref{listing:hamburger-sample}.
 
 \begin{listing}[ht]
-\inputminted{swift}{../code/vector-sample.swift}
-\caption{Example from external file}
-\label{listing:3}
+	\inputminted{swift}{../code/hamburger-sample.swift}
+	\caption{Example declaration of custom chromosome type.}
+	\label{listing:hamburger-sample}
 \end{listing}
+
+Note that in the example declaration, every property is named and strongly-typed, clearing up any possible confusion about their purpose, and preventing type casting issues in the future. Moreover, the custom implementation of the randomization initializer allows the user to specify clear bounds for fields, such as the hamburger price. Thanks to Swift generics, fields of type \texttt{Drink} and \texttt{Speed} can also be randomly initialized through the entropy generator, provided that they do conform to the \texttt{Randomizable} protocol. This way, the randomization call is propagated to all fields in the data structure.
+
+Lastly, types which are capable of listing all their possible values in a finite sequence can utilize the \texttt{Discrete} protocol, which implements the \texttt{Randomizable} protocol by randomly selecting values from a discrete uniform distribution of all values. A good demonstration of this is the \texttt{Drink} type, which is declared as a Swift enumeration in Listing \ref{listing:discrete-sample}.
+
+\begin{listing}[ht]
+	\inputminted{swift}{../code/discrete-sample.swift}
+	\caption{Declaration of a randomizable type through a discrete listing of values.}
+	\label{listing:discrete-sample}
+\end{listing}
+
+As shown by the demonstrations, declaration of custom types for heterogeneous chromosomes in Swift is effortless, safe and efficient. However, the reader should not be misled into thinking it only serves as syntax sugar for creating nicely annotated vessels for information. This technique can be also used to create genotype containers with customized behavior and proprietary internal structure, which is most notably exemplified in strings and trees, as both types are implemented in this way.
 
 \section{Genetic Operators}\label{section:genetic-operators}
 \todo

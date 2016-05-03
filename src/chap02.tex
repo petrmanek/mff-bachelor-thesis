@@ -139,30 +139,35 @@ When implementing fitness evaluation objects, it is recommended that the class \
 For instance, users can utilize \textit{the cyclic evaluator}. This type of evaluator encapsulates another evaluator, which is called $N$ times for a single evaluation of every chromosome. From the result, $M$ of the best (or the worst) fitness values are selected. The final fitness of the chromosome is the average calculated from the selected values.
 
 \section{Genetic Operators}\label{section:genetic-operators}
-Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a genetic algorithm. Every operator can select an arbitrary number of chromosomes in the population and is expected to produce at least one offspring chromosome as a result. The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters when the operators are created. There are various types of selections, each with different properties and effects on the operators (for their detailed description, see section \ref{section:selection}).
+Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a genetic algorithm. When operators are applied, two populations of chromosomes are available: \textit{the current generation} and \textit{the offspring generation}. While the first can be only accessed for reading, the latter also supports writing. Every operator can select and read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome in the offspring generation.
 
-The library offers three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to only these three. By creating descendants of \texttt{GeneticOperator<T>}, users are free to implement and experiment with any operators of their own.
+The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters when the operators are created. There are various types of selections, each with different properties and effects on the operators. For their detailed description, see section \ref{section:selection}.
+
+The library offers implementation of three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to only these three. By creating descendants of the generic \texttt{GeneticOperator<T>} class, users are free to implement and experiment with any operators of their own.
 
 \subsection{Reproduction}\label{section:reproduction}
-\todo
+The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. When applied on the population, it copies an arbitrary number of selected chromosomes from the current generation to the next one.
+
+Since chromosomes are immutable, this operator requires all chromosome data structures it works on to conform to the \texttt{Reproducible} protocol, which is an extension of the \texttt{Copyable} protocol.
 
 \subsection{Mutation}\label{section:mutation}
 The mutation operator serves the desirable function of introducing occasional variety into a population and restoring lost diversity to a population. \cite{Koza1992}
 
-Unlike reproduction, this operator requires all chromosome data structures it works on to conform to the \texttt{Mutable} protocol. Every container thus has its own, slightly different implementation of mutation, which should be described in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
+In order to work properly, this operator requires all chromosome data structures it works on to conform to the \texttt{Mutable} protocol. Every container thus has its own, slightly different implementation of mutation, which should be described in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
 
 General guidelines for implementing mutation are:
 ~
 \begin{enumerate}
-	\item Select one chromosome in the population based on fitness.
+	\item Select one chromosome in the current generation.
 	\item Choose a part of the chromosome at random.
 	\item Copy the chromosome, substituting the chosen part for a randomly generated equivalent.
-	\item Insert the modified chromosome among the offspring.
+	\item Insert the modified chromosome into the offspring generation.
 \end{enumerate}
 
-\todo
+Among various data structures, the semantical definition of \textit{a part} may differ. For instance, in arrays and range-initialized arrays, a part is any item of the array. Conversely, a part of a tree structure is any of its subtrees.
 
 \subsection{Crossover}\label{section:crossover}
+The crossover operator represents an instance of sexual reproduction. 
 \todo
 
 \subsection{Pipelines}\label{section:pipelines}

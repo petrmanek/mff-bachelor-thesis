@@ -1,17 +1,30 @@
 \chapter{Library Implementation}
-This chapter is a technical documentation of individual components of the library.
+This chapter contains technical documentation of individual components of the library, as well as examples of their usage.
 
 \section{Chromosome Data Structures}
-In the context of genetic algorithms, \textit{a chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. Since the nature and representation of such information heavily depends on the application, the library allows full customization of the underlying data structures. Apart from that, the library also provides implementation of the most frequently used data structures. This leaves users free to decide, whether to use a structure supplied by the library, implement a custom one, or combine multiple data structures together.
+In the context of genetic algorithms, \textit{a chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. Since the nature and representation of such information heavily depends on the application, the library allows full customization of the underlying data structures, which are used to hold chromosomes. The library also provides implementation of some of the most frequently used structures, leaving users free to decide, whether to use a structure supplied by the library, implement a custom one, or combine multiple data structures together.
 
-The question of efficiently encoding solutions into chromosomes is a separate topic, worthy of further investigation. The library is merely intended as a tool to build containers for such chromosomes, once the user's mind is set on a specific method of data representation. This section explains, how to achieve some often used configurations, and how to define custom data types for storing proprietary information.
+Within the library, chromosomes can be represented by any reference types, which conform to the \texttt{ChromosomeType} protocol. This protocol requires them to
+~
+\begin{enumerate}
+	\item be immutable,\footnote{This is a semantical requirement implying that every chromosome modification will require a new instance of the type to be created.}
+	\item be capable of randomly generating new instances.\footnote{This is achieved by requiring conformance to the \texttt{Randomizable} protocol.}
+\end{enumerate}
+
+This section explains, how to achieve common configurations using preimplemented types, how to customize them for different applications, and how to define custom data types for storing proprietary information.
+
+\subsection{Data Representation Problem}
+When designing chromosome data structures, users first need to decide which information should be stored within chromosomes and how should such information be encoded into primitive types. These questions might not always be trivial to answer and it is possible to show that 
+unfortunate choices could potentially impact the rate of convergence of the genetic algorithm significantly. This is known as \textit{the problem of data representation}.
+
+It is worth noting at this point that the complexity of this problem extends far beyond the scope of this work, and is thus not addressed. For more information on this topic, readers are referred to ???. \todo
 
 \subsection{Strings}\label{section:strings}
 One of the most common ways of storing chromosomes is to encode them as strings of values of a same type, e. g. binary or numeric. Such strings are represented by \textit{range-initalized arrays}.
 
 A range-initialized array is similar to a regular array in many ways. It is a generic list structure, which is capable of holding finite amounts of ordered homogeneous items. However, at the time of initialization, the number of elements in the array is set to a value, which non-deterministically selected from a given number interval. This allows for more flexibility, since in some applications, it is beneficial to vary not only the contents of the chromosome, but also its size. If this behavior is not required, the array can be configured to a constant length by using any interval of length zero.
 
-A simple usage of range-initialized arrays can be demonstrated on the Knapsack Problem. Suppose that there are 10 things of different sizes and values and a knapsack of a limited capacity. The objective is to select things to maximize the total value of knapsack contents, while not exceeeding its capacity. All solutions of this problem can be described as strings of 10 Boolean values, indicating whether items 1-10 are selected. These values can be stored in a range-initialized array with interval $[10;10]$ (implying that the array has fixed size 10), which is declared in Listing \ref{listing:array-knapsack}.
+A simple usage of range-initialized arrays can be demonstrated on the Knapsack Problem. Suppose that there are 10 things of different sizes and values and a knapsack of a limited capacity. The objective is to select things in order to maximize the total value of knapsack contents, while not exceeeding its capacity. All solutions of this problem can be described as strings of 10 Boolean values, indicating whether items 1-10 are selected. These values can be stored in a range-initialized array with interval $[10;10]$ (implying that the array has fixed size 10), which is declared in Listing \ref{listing:array-knapsack}.
 
 \begin{listing}[ht]
 	\inputswift{array-knapsack}
@@ -19,11 +32,11 @@ A simple usage of range-initialized arrays can be demonstrated on the Knapsack P
 	\label{listing:array-knapsack}
 \end{listing}
 
-In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift extensions, every instance of range-initialized array automatically supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}) and can generate random instances of itself. Range-initialized arrays can thus be directly used as chromosomes in genetic algorithms without any further modification.
+In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift extensions, every instance of range-initialized array automatically conforms to the \texttt{ChromosomeType} protocol and supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}). Range-initialized arrays can thus be directly used as chromosomes in genetic algorithms without any further modification.
 
-It is worth noting at this point that strings are \textbf{not designed to store heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as Booleans, it can be encoded as a binary string, portions of which would be later interpretted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application.
+It is worth noting at this point that strings are \textbf{not designed to store heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as bits, it can be encoded as a binary string, portions of which would be later interpretted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application.
 
-While this approach succeeds in encoding the chromosome into a binary string, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item in the array, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
+While this approach succeeds in its purpose, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item of the array, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
 
 \subsection{Trees}
 Tree structures are commonly used in applications, which require automatic code generation. In such applications, chromosomes often contain control programs or mathematical formulas, which can be represented by tree graphs. The library allows to store such data in a collection of \textit{tree nodes}.
@@ -38,7 +51,7 @@ A tree node is an abstract data structure, which can be configured to contain in
 	The purpose of an action node is to perform an action at runtime. The action may be a command of some kind, or may call other action, possibly requiring arguments in the form of other value nodes.
 \end{description}
 
-Both types of nodes are easily extensible, allowing users to define their own functions and commands, depending on the application. This can be demonstrated on a simple maze robot simulation. Suppose that there is a robot, which can receive WAIT, GO, STOP, TURN-LEFT and TURN-RIGHT commands, in order to navigate in a 2-dimensional maze. The robot also carries a set of sensors, capable of determining, whether its front side is facing an obstacle. To auto-generate a control program for such robot, its commands can be formalized as 5 action nodes and the sensor output can be represented by a single Boolean value node. Example of such formalization is shown in Listing \ref{listing:tree-maze}.
+Both types of nodes are easily extensible, allowing users to define their own functions, operations and commands depending on the application. This can be demonstrated on a simple maze robot simulation. Suppose that there is a robot, which can receive WAIT, GO, STOP, TURN-LEFT and TURN-RIGHT instructions in order to navigate in a 2-dimensional maze. The robot also carries a set of sensors capable of determining whether its front side is facing an obstacle. To auto-generate a control program for such robot, its commands can be formalized as 5 action nodes and the sensor output can be represented by a single Boolean value node. Example of such formalization is shown in Listing \ref{listing:tree-maze}.
 
 \begin{listing}[ht]
 	\inputswift{tree-maze}
@@ -46,14 +59,14 @@ Both types of nodes are easily extensible, allowing users to define their own fu
 	\label{listing:tree-maze}
 \end{listing}
 
-It is concievable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce elements of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library offers various frequently used node types, ready to use:
+It is concievable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce fundamental building blocks of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library offers various frequently used node types, ready to use:
 ~
 \begin{description}
 	\item[Constants and Operations]
-	Constant nodes contain a static value of any type, unchanging during program execution. Operation nodes are generic templates for any unary or binary operation applied on a set of value nodes.
+	Constant nodes contain static values of any type, unchanging during program execution. Operation nodes are generic templates for unary or binary operations applied on arguments, which are represented by other value nodes.
 
 	\item[Comparisons]
-	Comparison nodes represent equality and inequality predicates, operating on tuples of other value nodes.
+	Comparison nodes represent equality and inequality predicates, operating on tuples of value nodes.
 
 	\item[Arithmetic and Boolean Operations]
 	For any numeric value nodes, addition, subtraction, multiplication, division and modulation are supported. In analogy, Boolean value nodes support negation, conjunction, disjunction, implication and equivalence.
@@ -62,7 +75,7 @@ It is concievable that combinations of various tree nodes can be translated into
 	Action nodes can be combined in sequences, loops or simple conditional expressions.
 \end{description}
 
-It is recommended that tree factories are instantiated in the global context, or as in subclasses of entropy generators (see Listing \ref{listing:tree-factory}). Apart from controlling the type of generated nodes, factories allow to control the depth and width of the tree, bounding the number of generated structures.
+It is recommended that tree factories are instantiated in the global context, or in subclasses of entropy generators (see Listing \ref{listing:tree-factory}). Apart from controlling the type of generated nodes, factories allow to control the depth and width of the tree, bounding the number of generated structures.
 
 \begin{listing}[ht]
 	\inputswift{tree-factory}
@@ -73,9 +86,9 @@ It is recommended that tree factories are instantiated in the global context, or
 \subsection{Custom Types}\label{section:custom-types}
 If the chromosome information is not compatible with strings or trees, or is heterogeneous in its nature, it is recommended that a custom data type is declared to hold it. This allows users to name, document and describe individual parts of the chromosome, as well as to customize its behavior at important points of evaluation.
 
-Any Swift reference type can become a chromosome data structure, if it conforms to the \texttt{Randomizable} protocol. No other protocol conformance is formally required. Nevertheless, it is worth noting that some genetic operators require chromosomes to conform to other proprietary protocols, in order to operate on them. For instance, the \texttt{Mutable} protocol, which allows users to customize the way mutations are applied to the internals of the data structure. For full listing of such protocols, see section \ref{section:genetic-operators}.
+Any reference type can become a chromosome data structure, if it conforms to the \texttt{ChromosomeType} protocol (and its inherited protocols). No other protocol conformance is formally required. Nevertheless, it is worth noting that some genetic operators require chromosomes to conform to other proprietary protocols, in order to operate on them. For instance, the \texttt{Mutable} protocol, which is required by the \texttt{Mutation} operator. For full listing of such protocols, see section \ref{section:genetic-operators}.
 
-Declaration of custom types can be demonstrated on The Hamburger Restaurant Problem, mentioned in the introduction of \cite{Koza1992} (for the purposes of this work, the example has been slightly altered). The objective is to find a business strategy for a chain of hamburger restaurants, which yields the biggest profit. A strategy consists of three decisions:
+Declaration of custom types can be demonstrated on The Hamburger Restaurant Problem, mentioned in the introduction\footnote{For the purposes of this work, the example has been slightly altered.} of \cite{Koza1992}. The objective is to find a business strategy for a chain of hamburger restaurants, which yields the biggest profit. A strategy consists of three decisions:
 ~
 \begin{description}
 	\item[Price]
@@ -88,7 +101,7 @@ Declaration of custom types can be demonstrated on The Hamburger Restaurant Prob
 	Should the restaurant provide slow, leisurely service by waiters in tuxedos or fast, snappy service by waiters in white polyester uniforms?
 \end{description}
 
-Clearly every strategy is a heterogeneous data structure. Although it could be encoded into a binary string (as proposed in section \ref{section:strings}), it is much safer and more elegant to declare a dedicated type to hold its information. Such declaration is shown in Listing \ref{listing:hamburger-sample}.
+Clearly every strategy is a heterogeneous data structure. Although it could be encoded into a binary string as proposed in section \ref{section:strings}, it is much safer and more elegant to declare a dedicated type to hold its information. Such declaration is shown in Listing \ref{listing:hamburger-sample}.
 
 \begin{listing}[ht]
 	\inputswift{hamburger-sample}
@@ -96,9 +109,9 @@ Clearly every strategy is a heterogeneous data structure. Although it could be e
 	\label{listing:hamburger-sample}
 \end{listing}
 
-Note that in the example declaration, every property is named and strongly-typed, clearing up any possible confusion about their purpose, and preventing type casting issues in the future. Moreover, the custom implementation of the randomization initializer allows the user to specify clear bounds for fields, such as the hamburger price. Thanks to Swift generics, fields of type \texttt{Drink} and \texttt{Speed} can also be randomly initialized through the entropy generator, provided that they do conform to the \texttt{Randomizable} protocol. This way, the randomization call is propagated to all fields in the data structure.
+Note that in the example declaration, every property is named and strongly-typed, clearing up any possible confusion about their purpose, and preventing type casting issues in the future. Moreover, the custom implementation of the randomization initializer allows users to specify clear bounds for fields, such as the hamburger price. Thanks to Swift generics, fields of type \texttt{Drink} and \texttt{Speed} can also be randomly initialized through the entropy generator, provided that they do conform to the \texttt{Randomizable} protocol. This way, the randomization call is propagated to all fields of the data structure.
 
-Lastly, types which are capable of listing all their possible values in a finite sequence can utilize the \texttt{Discrete} protocol, which implements the \texttt{Randomizable} protocol by randomly selecting values from a discrete uniform distribution of all values. A good demonstration of this is the \texttt{Drink} type, which is declared as a Swift enumeration in Listing \ref{listing:discrete-sample}.
+Lastly, it is worth mentioning that types which are capable of listing all their possible values in a set of finite cardinality can utilize the \texttt{Discrete} protocol. This protocol functions as a simple time-saving shorthand for the \texttt{Randomizable} protocol, since it produces random values from the discrete uniform distribution of all values in the set. A good demonstration of this is a possible implementation of the \texttt{Drink} type, which is declared as a Swift enumeration in Listing \ref{listing:discrete-sample}.
 
 \begin{listing}[ht]
 	\inputswift{discrete-sample}
@@ -106,7 +119,7 @@ Lastly, types which are capable of listing all their possible values in a finite
 	\label{listing:discrete-sample}
 \end{listing}
 
-As shown by the demonstrations, declaration of custom types for heterogeneous chromosomes in Swift is effortless, safe and efficient. However, the reader should not be misled into thinking it only serves as syntax sugar for creating nicely annotated vessels for information. This technique can be also used to create genotype containers with customized behavior and proprietary internal structure, which is most notably exemplified in strings and trees, as both types are implemented in this way.
+As shown by the demonstrations, declaration of custom types for heterogeneous chromosomes in Swift is effortless, safe and efficient. However, the reader should not be misled into thinking it only serves for creating nicely annotated vessels for information. This technique can be also used to create genotype containers with customized behavior and proprietary internal structure, which is most notably exemplified in strings and trees, as both types are implemented in this way.
 
 \section{Population Evaluation}
 In order to assess and compare the quality of chromosomes with respect to the problem at hand, a common fitness evaluation model is used. In this model, every chromosome is assigned a decimal value from the $[0;1]$ interval by a \textit{fitness function}, which is heavily dependent on the application and thus specified by the user. The fitness function is encapsulated in an \textit{evaluator} object, which is active for the entire duration of evaluation.
@@ -132,43 +145,58 @@ where $S_{max}$ represents the maximum capacity of the knapsack, $\{s_i\}_{i=1}^
 	\label{listing:evaluator-sequential}
 \end{listing}
 
-In the example, the evaluator is a descendant of \texttt{SequentialEvaluator<T>}, which is a common generic base class for all sequential evaluators. Similarly, all parallel evaluators are descendants of the \texttt{ParallelEvaluator<T>} class, which instantiates multiple sequential evaluators operating on different threads and manages an internal producer-consumer queue to facilitate parallel evaluation of chromosomes. Moreover, both types of evaluators inherit from \texttt{Evaluator<T>}, an abstract class which defines the formal requirements on all evaluator objects.
+In the example, the evaluator is a descendant of \texttt{SequentialEvaluator<T>}, which is a common generic base class for all sequential evaluators. Similarly, all parallel evaluators are descendants of the \texttt{ParallelEvaluator<T>} class, which instantiates multiple sequential evaluators operating on different threads and manages internal producer-consumer queue to facilitate parallel evaluation of chromosomes. Moreover, both types of evaluators inherit from \texttt{Evaluator<T>}, an abstract class which defines the formal requirements on all evaluator objects.
 
-When implementing fitness evaluation objects, it is recommended that the class \texttt{Evaluator<T>} is directly subclassed only in cases, when the evaluation scheme is incompatible other classes. A good example of such scenario would be an evaluator type, which utilizes a distributed computing cluster. Furthermore, the library offers evaluator types, which enable its users to effortlessly utilize common fitness calculation techniques.
+When implementing fitness evaluator classes, it is recommended that the class \texttt{Evaluator<T>} is directly subclassed only in cases, when the evaluation scheme is incompatible the other existing subclasses. A good example of such scenario would be an evaluator utilizing distributed computing cluster. However, directly subclassing \texttt{Evaluator<T>} only to create a custom implementation of sequential evaluator is not advisable, since \texttt{SequentialEvaluator<T>} is integrated into other parts of the library and avoiding it would prevent users from interacting with such parts.
 
-For instance, users can utilize \textit{the cyclic evaluator}. This type of evaluator encapsulates another evaluator, which is called $N$ times for a single evaluation of every chromosome. From the result, $M$ of the best (or the worst) fitness values are selected. The final fitness of the chromosome is the average calculated from the selected values.
+For instance, every subclass of \texttt{SequentialEvaluator<T>} can be combined with \textit{a cyclic evaluator}. This type encapsulates the other evaluator, which is called $N$ times for a single evaluation of every chromosome. From the result, $M$ of the best (or the worst) fitness values are selected. The final fitness of the chromosome is the average calculated from the selected values.
 
 \section{Genetic Operators}\label{section:genetic-operators}
-Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a genetic algorithm. When operators are applied, two populations of chromosomes are available: \textit{the current generation} and \textit{the offspring generation}. While the first can be only accessed for reading, the latter also supports writing. Every operator can select and read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome in the offspring generation.
+Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a genetic algorithm. When operators are applied, two sets of chromosomes are available: \textit{the current generation} and \textit{the offspring generation}. While the first can be only accessed for reading, the latter also supports writing. Every operator can select and read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome in the offspring generation.
 
 The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters when the operators are created. There are various types of selections, each with different properties and effects on the operators. For their detailed description, see section \ref{section:selection}.
 
-The library offers implementation of three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to only these three. By creating descendants of the generic \texttt{GeneticOperator<T>} class, users are free to implement and experiment with any operators of their own.
+The library offers implementation of three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to only these three. By creating descendants of the generic class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any operators of their own.
 
 \subsection{Reproduction}\label{section:reproduction}
-The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. When applied on the population, it copies an arbitrary number of selected chromosomes from the current generation to the next one.
+The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. Unlike others, this operator does not introduce any novelty into the offspring generation. Instead, its purpose is to stabilize the population by carrying certain traits between generations. This in effect prevents the loss of diversity and thereby avoids premature convergence of the algorithm.
 
-Since chromosomes are immutable, this operator requires all chromosome data structures it works on to conform to the \texttt{Reproducible} protocol, which is an extension of the \texttt{Copyable} protocol.
+When applied on the population, the reproduction operator copies arbitrary number of selected chromosomes from the current generation to the next one without any modifications. Since the selection of individuals is independent of the operator implementation, it is technically possible to use any selection object with this operator. Nevertheless, it is worth noting that only fitness-proportionate strategies make sense in this context.
+
+Since chromosome data structures are immutable by definition, the reproduction operator requires them to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of themselves.
 
 \subsection{Mutation}\label{section:mutation}
-The mutation operator serves the desirable function of introducing occasional variety into a population and restoring lost diversity to a population. \cite{Koza1992}
+The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it copies selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The mutated chromosomes should generally resemble their original counterparts, while not being completely identical.
 
-In order to work properly, this operator requires all chromosome data structures it works on to conform to the \texttt{Mutable} protocol. Every container thus has its own, slightly different implementation of mutation, which should be described in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
+In order to be used, the mutation operator requires the chromosome data structure it works on to conform to the \texttt{Mutable} protocol. Every container can thus have its own, slightly different implementation of mutation, which should be explained in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
 
 General guidelines for implementing mutation are:
 ~
 \begin{enumerate}
 	\item Select one chromosome in the current generation.
-	\item Choose a part of the chromosome at random.
+	\item Choose \textit{a part} of the chromosome at random.
 	\item Copy the chromosome, substituting the chosen part for a randomly generated equivalent.
 	\item Insert the modified chromosome into the offspring generation.
 \end{enumerate}
 
-Among various data structures, the semantical definition of \textit{a part} may differ. For instance, in arrays and range-initialized arrays, a part is any item of the array. Conversely, a part of a tree structure is any of its subtrees.
+Clearly, among various data structures the semantical definition of \textit{a part} may differ. For instance, in arrays and range-initialized arrays, a part is thought to be any item of the array, whereas a part of a tree structure may be any of its subtrees.
 
 \subsection{Crossover}\label{section:crossover}
-The crossover operator represents an instance of sexual reproduction. 
-\todo
+The crossover operator represents an instance of sexual reproduction (also known as \textit{recombination}). Unlike the previous two operators, it requires the input of exactly two chromosomes from the current generation. During the execution of the operator, equivalent parts of selected chromosomes are randomly chosen and exchanged, producing two new chromosomes, both carrying certain traits of their parents.
+
+Depending on the number and size of interchanged parts, multiple classes of crossover operators can be defined. For arrays and range-initialized arrays, two crossovers are implemented:
+~
+\begin{description}
+	\item[One-point crossover]
+	A single point is randomly chosen to divide both arrays in two parts. While the first pair of parts is kept at its original position, the second pair is swapped between the chromosomes.
+
+	\item[Two-point crossover]
+	In analogous way to the one-point crossover, two points are randomly chosen to divide both arrays in three parts. The middle pair of parts is swapped between the chromosomes, whereas the remaining two pairs are left unmodified.
+\end{description}
+
+For tree structures, the crossover is implemented by selecting two random subtrees rooted in nodes, which are descendants of the same base class (either both nodes are action nodes or value nodes specialized on matching types). The crossover is performed when both subtrees are swapped between trees.
+
+% protocol
 
 \subsection{Pipelines}\label{section:pipelines}
 \todo

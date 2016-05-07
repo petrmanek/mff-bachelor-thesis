@@ -238,7 +238,11 @@ Pipelines are defined by Swift operators \texttt{--->} and \texttt{|||}. The fir
 \end{listing}
 
 \section{Selections}\label{section:selection}
-\todo
+The purpose of selection objects is to separate the methods of chromosome selection from the genetic operators. This approach allows users to easily combine operators with selection methods without the need for subclassing.
+
+As input, selection objects receive three parameters from their genetic operators: the current generation (with fitness evaluations), an entropy generator and the number of requested chromosomes. In return, selection objects are expected to produce a list of indices of the selected chromosomes or fail with error should the population contain insufficient number of chromsomes. When accessing fitness evaluations, the library uses lazy-loading optimizations, in order to prevent unnecessary sorting and data aggregation. For that reason, selection objects are not required to specify fitness-related dependencies. Instead, additional caluclations are performed on the first instance, when the information is required.
+
+Similarly to genetic operators, the library offers the implementation of common selections and allows its users to customize their behavior, possibly creating their own subclasses. Such techniques are described at the end of this section.
 
 \subsection{Roulette Selection}
 \todo

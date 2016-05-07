@@ -1,0 +1,564 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"labelStroke",
+				"labelStrokeColor"
+			],
+			[
+				"colorScale",
+				"colorScaleFunction	(index.html)"
+			],
+			[
+				"detec",
+				"detectOptimalEnergyRange	(ieap.frame.js)"
+			],
+			[
+				"border-left",
+				"border-bottom-left-radius"
+			],
+			[
+				"appe",
+				"appendTo〔function〕"
+			],
+			[
+				"crossh",
+				"crosshairIndicator"
+			],
+			[
+				"frontfr",
+				"frontFrameChart"
+			],
+			[
+				"state",
+				"stateCanvas"
+			],
+			[
+				"prern",
+				"prerenderMethods"
+			],
+			[
+				"crosshair",
+				"crosshairStroke"
+			],
+			[
+				"crossH",
+				"crosshairIndicator"
+			],
+			[
+				"frameScale",
+				"frameScaleLabelTopOffset"
+			],
+			[
+				"selection",
+				"selectionSquareAspectRatio"
+			],
+			[
+				"selectionStrok",
+				"selectionStrokeDashing"
+			],
+			[
+				"currentSen",
+				"currentSensorIndex"
+			],
+			[
+				"curr",
+				"currentSensor〔variable〕"
+			],
+			[
+				"cur",
+				"currentFrame〔variable〕"
+			],
+			[
+				"update",
+				"updateCommonChartConfig"
+			],
+			[
+				"backFra",
+				"backFrameChart"
+			],
+			[
+				"maximum",
+				"maximumEnergy"
+			],
+			[
+				"relSc",
+				"relScaleStart"
+			],
+			[
+				"maxim",
+				"maximumEnergy"
+			],
+			[
+				"frontFrem",
+				"frontFrameChart"
+			],
+			[
+				"Plot",
+				"PlotGenerations2"
+			],
+			[
+				"Matrix",
+				"MatrixPerturb〔function〕"
+			],
+			[
+				"muta",
+				"mutation_probability"
+			],
+			[
+				"__",
+				"__name__	instance"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "Packages/Makefile/Make.sublime-build",
+	"command_palette":
+	{
+		"height": 292.0,
+		"selected_items":
+		[
+			[
+				"menu",
+				"View: Toggle Menu"
+			],
+			[
+				"Package Control: ins",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: inst",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 467.0
+	},
+	"console":
+	{
+		"height": 224.0,
+		"history":
+		[
+			"say_hello()",
+			"help",
+			"import urllib.request,os,hashlib; h = 'eb2297e1a458f27d836c04bb0cbaf282' + 'd0e7a3098092775ccb37ca9d6b2e4b7d'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/petrmanek/proj/bakalar"
+	],
+	"file_history":
+	[
+		"/home/petrmanek/proj/tpx/thesis/bibliography/SmallDosimeter.bib",
+		"/home/petrmanek/proj/tpx/thesis/bibliography/ProcessingSoftware.bib",
+		"/home/petrmanek/proj/tpx/thesis/bibliography/MeasuringRadiation.bib",
+		"/home/petrmanek/proj/tpx/thesis/bibliography/PatternRecognition.bib",
+		"/home/petrmanek/proj/tpx/thesis/bibliography/RemoteControl.bib",
+		"/home/petrmanek/proj/tpx/thesis/bibliography/FITPix.bib",
+		"/home/petrmanek/proj/tpx/thesis/bibliography/MedipixNetwork.bib",
+		"/home/petrmanek/proj/tpx/thesis/bibliography/Timepix.bib",
+		"/home/petrmanek/proj/tpx/thesis/chapters/appendix-jstp-doc",
+		"/home/petrmanek/proj/tpx/thesis/thesis.tex",
+		"/home/petrmanek/Dokumenty/proj/tpx/thesis/code/jstp-timeline-request.json",
+		"/home/petrmanek/proj/tpx/thesis/code/jstp-frames-request.json",
+		"/home/petrmanek/proj/tpx/thesis/code/jstp-timeline-response.json",
+		"/home/petrmanek/proj/tpx/thesis/appendix_creation_scripts.tex",
+		"/home/petrmanek/proj/tpx/thesis/code/security.sql",
+		"/home/petrmanek/proj/tpx/thesis/code/frames.sql",
+		"/home/petrmanek/proj/tpx/thesis/code/rootfiles.sql",
+		"/home/petrmanek/Dokumenty/proj/tpx/thesis/thesis.tex",
+		"/home/petrmanek/Dokumenty/proj/tpx/thesis/nomenclature.tex",
+		"/home/petrmanek/tikztest/tree.tex",
+		"/home/petrmanek/dld/science.bib",
+		"/home/petrmanek/dld/protocol.v0.3.json",
+		"/home/petrmanek/proj/tpx/thesis/reference.bib.example",
+		"/home/petrmanek/proj/tpx/vizualization/public/index.html",
+		"/home/petrmanek/proj/tpx/vizualization/public/js/ieap.timeline.js",
+		"/home/petrmanek/Dokumenty/proj/bakalar/src/thesis.tex",
+		"/home/petrmanek/proj/tpx/vizualization/public/js/ieap.colormaps.js",
+		"/home/petrmanek/proj/tpx/vizualization/public/css/index.css",
+		"/home/petrmanek/proj/tpx/vizualization/public/js/ieap.frame.js",
+		"/home/petrmanek/proj/tpx/vizualization/public/js/ieap.sensor.js",
+		"/home/petrmanek/proj/tpx/vizualization/public/js/ieap.utils.js",
+		"/home/petrmanek/proj/tpx/vizualization/public/js/ieap.tpxapi.js",
+		"/home/petrmanek/proj/tpx/vizualization/public/js/ieap.scales.js",
+		"/home/petrmanek/proj/tpx/vizualization/config.js",
+		"/home/petrmanek/proj/tpx/vizualization/app.js",
+		"/home/petrmanek/cvut/rozpoznavani/13_pca/assignment_12.m",
+		"/home/petrmanek/cvut/rozpoznavani/13_pca/compact_representation.m",
+		"/home/petrmanek/proj/tpx/vizualization/public/js/ieap.measurements.js",
+		"/home/petrmanek/proj/tpx/vizualization/public/js/ieap.sensorCell.js",
+		"/home/petrmanek/cvut/optimalizace/hw6/ukol.m",
+		"/home/petrmanek/Dropbox/cvut/rozpoznavani/10_adaboost/adaboost.m",
+		"/home/petrmanek/cvut/rozpoznavani/08_svm/answers.txt",
+		"/home/petrmanek/cvut/rozpoznavani/08_svm/compute_TstErr.m",
+		"/home/petrmanek/proj/tpx/vizualization/index.html",
+		"/home/petrmanek/proj/tpx/vizualization/js/ieap.frame.js",
+		"/home/petrmanek/proj/tpx/webserver/index.html",
+		"/home/petrmanek/proj/tpx/webserver/js/ieap.tpxapi.js",
+		"/home/petrmanek/proj/tpx/webserver/js/ieap.measurements.js",
+		"/home/petrmanek/proj/tpx/webserver/js/ieap.frame.js",
+		"/home/petrmanek/proj/tpx/webserver/css/index.css",
+		"/home/petrmanek/cvut/optimalizace/ota/taylor/taylor.tex",
+		"/home/petrmanek/cvut/optimalizace/hw4/komentar.tex",
+		"/home/petrmanek/mff/algebra1/hw02/hw02.tex",
+		"/home/petrmanek/.config/awesome/tj-awesome-themes/Darklooks/titlebar/floating.xcf",
+		"/home/petrmanek/.config/awesome/pm/colors.lua",
+		"/home/petrmanek/labe",
+		"/home/petrmanek/cvut/rozpoznavani/02_bayes/assignment_02.m",
+		"/home/petrmanek/proj/tpx/orig/js/ieap.tpxapi.js",
+		"/home/petrmanek/proj/tpx/orig/js/ieap.frame.js",
+		"/home/petrmanek/proj/tpx/orig/css/index.css",
+		"/home/petrmanek/proj/tpx/orig/js/Chart.js",
+		"/home/petrmanek/proj/tpx/orig/js/Chart.StackedBar.js",
+		"/home/petrmanek/proj/tpx/orig/index.html",
+		"/home/petrmanek/proj/tpx/orig/js/ieap.utils.js",
+		"/home/petrmanek/proj/dungeon/src/main.cpp",
+		"/home/petrmanek/proj/dungeon/src/Utils/Logger.cpp",
+		"/home/petrmanek/proj/dungeon/src/Utils/Utils.hpp",
+		"/home/petrmanek/proj/dungeon/src/Utils/Logger.hpp",
+		"/home/petrmanek/proj/tpx/orig/js/bootstrap-gtreetable.js",
+		"/home/petrmanek/proj/tpx/datasets.html",
+		"/home/petrmanek/proj/tpx/css/index.css",
+		"/home/petrmanek/proj/tpx/js/ieap.frame.js",
+		"/home/petrmanek/proj/tpx/js/ieap.colormaps.js",
+		"/home/petrmanek/proj/tpx/index.html",
+		"/home/petrmanek/mff/algebra1/hw01/hw01.tex",
+		"/home/petrmanek/Dokumenty/proj/tpx/_materials/MultiFrame/2015_09_18_TPX00_08.txt",
+		"/home/petrmanek/Dokumenty/proj/tpx/_materials/MultiFrame/2015_09_18_TPX00_08.txt.dsc",
+		"/home/petrmanek/proj/tpx/js/ieap.scales.js",
+		"/home/petrmanek/labe.api.v1.json",
+		"/media/petrmanek/USB/ATLAS/MultiFrame/2015_09_18_TPX00_08.txt.dsc",
+		"/media/petrmanek/USB/ATLAS/MultiFrame/2015_09_18_TPX00_08.txt",
+		"/home/petrmanek/.config/awesome/pm/constants.lua",
+		"/home/petrmanek/mff/bakalar/rp/specifikace.tex",
+		"/home/petrmanek/.dotfiles/.offlineimaprc",
+		"/home/petrmanek/.dotfiles/.mutt/.muttrc",
+		"/home/petrmanek/.dotfiles/.mutt/.muttrc.local",
+		"/home/petrmanek/.config/awesome/theme/theme.lua",
+		"/home/petrmanek/.config/awesome/rc.lua",
+		"/home/petrmanek/proj/tpx/app.js",
+		"/home/petrmanek/proj/tpx/data.json",
+		"/home/petrmanek/.config/awesome/pm.lua",
+		"/home/petrmanek/Dokumenty/proj/app.js",
+		"/home/petrmanek/.dotfiles/.mutt/mailboxes",
+		"/home/petrmanek/.dotfiles/.mutt/hooks",
+		"/home/petrmanek/.dotfiles/.mutt/gpg.rc",
+		"/home/petrmanek/.dotfiles/.mutt/colors",
+		"/home/petrmanek/.dotfiles/.mutt/aliases",
+		"/home/petrmanek/dbin/checkmail",
+		"/home/petrmanek/.mutt.local",
+		"/home/petrmanek/.dotfiles/.mutt/offlineimap.py",
+		"/home/petrmanek/.xprofile",
+		"/home/petrmanek/.startup",
+		"/home/petrmanek/watchlist",
+		"/home/petrmanek/kviff2",
+		"/home/petrmanek/kviff",
+		"/home/petrmanek/.dotfiles/.config/awesome/rc.lua",
+		"/home/petrmanek/.dotfiles/.config/awesome/theme/theme.lua",
+		"/home/petrmanek/.local/share/themes/Adwaita/gtk-3.0/gtk.css",
+		"/home/petrmanek/proj/blog/_config.yml",
+		"/home/petrmanek/proj/blog/CNAME",
+		"/home/petrmanek/proj/blog/_posts/2015-07-02-pane-redaktore-vite-co-jsou-festival-pasy.markdown",
+		"/home/petrmanek/proj/blog/index.html",
+		"/home/petrmanek/proj/blog/_includes/footer.html",
+		"/home/petrmanek/proj/blog/_includes/head.html",
+		"/home/petrmanek/proj/blog/about.md",
+		"/home/petrmanek/proj/blog/css/main.scss",
+		"/home/petrmanek/proj/blog/_sass/_base.scss",
+		"/home/petrmanek/proj/blog/_sass/_layout.scss",
+		"/home/petrmanek/proj/blog/_includes/header.html",
+		"/home/petrmanek/proj/blog/_posts/2015-07-02-welcome-to-jekyll.markdown",
+		"/home/petrmanek/proj/blog/_layouts/default.html",
+		"/home/petrmanek/proj/blog/README.md",
+		"/home/petrmanek/cvut/programovani/determinant.hs",
+		"/home/petrmanek/dbin/pbin",
+		"/home/petrmanek/cvut/databaze/semestralka/jooq_config.xml",
+		"/home/petrmanek/cvut/architektura/hw04/prepsano.c",
+		"/home/petrmanek/Dropbox/cvut/architektura/hw02/main.cpp",
+		"/home/petrmanek/Dropbox/cvut/architektura/hw02/evaluation.txt"
+	],
+	"find":
+	{
+		"height": 26.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"dosimeter",
+			"processing software",
+			"jakubek",
+			"http",
+			"\\}",
+			"\\{",
+			"bib",
+			"Llopart2007485",
+			"Jakubek2011S262",
+			"Turecek2011S45",
+			"TurecekThesis2011",
+			"Vykydal200935",
+			"nethercote2007valgrind",
+			"Brun199781",
+			"postgre",
+			"holik",
+			"citace",
+			"todo",
+			"luminos",
+			"luminosit",
+			"Holy",
+			"turecek",
+			"device",
+			"listing",
+			"the \\",
+			"ATLASPIX",
+			"30",
+			"	",
+			"callback(",
+			"commonchartconfig",
+			"red:",
+			"pixels",
+			"layout.scale",
+			"drawpoint",
+			"datapoint",
+			"colorscalefunc",
+			"colorscalefunction",
+			"colorscalfunction",
+			"colormap",
+			".energy",
+			"getboundingclientrect",
+			"getcanvasmousecoord",
+			"mousehandler",
+			"setdimensions",
+			"strokewidth",
+			"labeltext",
+			"labelhandler",
+			"frame-state",
+			"loadSensor",
+			"loadFrame",
+			"loadframe()",
+			"loadframe(",
+			"multipleSensorData",
+			"changeCurrentTime",
+			"loadFrame(",
+			".dataCanvas = ",
+			"labelhandler",
+			"prev-frame",
+			"X: [",
+			"next-frame",
+			"getenergybounds",
+			"color scale",
+			"pixelwid",
+			"scale",
+			"minX",
+			"scale.",
+			"prerender",
+			"scale.",
+			"scale",
+			"datatocanvas",
+			"layoutprerenders",
+			"layout()",
+			"prerenders.dataCanva",
+			"tick",
+			"setdimensions",
+			"width",
+			"0.5",
+			"datatocanvas",
+			"pixels",
+			"0.5",
+			"tick",
+			"layoutrect",
+			".datacanvas",
+			"colorscaletitle",
+			"config",
+			"energy[",
+			"datacanvas",
+			"currenttime",
+			"currentTime",
+			"currentframeindex",
+			"currentFrame =",
+			"currentframeindex",
+			"currentFrameIndex",
+			"loadFrame",
+			"labelhandler",
+			"labeltext",
+			"cross",
+			"state",
+			"mousehandler",
+			"labeltext",
+			"title",
+			"crosshair",
+			"statecanvas",
+			"min-energy",
+			"100",
+			"{ min: 0, max: 100 }",
+			"logarithmic",
+			"scaledenergy",
+			"abstorel",
+			"setScaleRange",
+			"min-energy",
+			"minimumEnerg",
+			"scaleBounds",
+			"energyBounds",
+			"maximumEnergy",
+			"minimumEnergy",
+			"colorScale(",
+			"logarith",
+			"epsilon",
+			"Math.log",
+			"logarithmic",
+			"range",
+			"logarithmic",
+			"abstorel",
+			"0.001",
+			"colorScaleLabels",
+			"colorscale",
+			"minimumEnergy"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"}",
+			"{",
+			"    ",
+			"{ min: 1, max: 999 }",
+			"scaleRange",
+			"Math.log10",
+			"y",
+			"x",
+			"'2d'",
+			"",
+			"color",
+			"(color)",
+			"color",
+			"NULL"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 44.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"project": "thesis.sublime-project",
+	"replace":
+	{
+		"height": 48.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+			[
+				"~",
+				"~/.config/awesome/rc.sublime-workspace"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": false,
+	"side_bar_width": 184.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

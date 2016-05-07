@@ -6,12 +6,14 @@ PDFLATEX_FLAGS = -shell-escape
 all: thesis.pdf
 
 # LaTeX must be run multiple times to get references right
-thesis.pdf: thesis.tex $(wildcard *.tex) bibliography.bib
+thesis.pdf: tex/thesis.tex $(wildcard tex/*.tex) bibliography.bib
 	pdflatex $(PDFLATEX_FLAGS) $<
 	bibtex thesis
 	pdflatex $(PDFLATEX_FLAGS) $<
 	pdflatex $(PDFLATEX_FLAGS) $<
 
 clean:
-	rm -rf *.log *.dvi *.aux *.toc *.lof *.lot *.out *.bbl *.blg _minted-thesis/
+	rm -rf *.log *.dvi *.aux *.toc *.lof *.lot *.lol *.out *.bbl *.blg _minted-thesis/
+	rm -f tex/*.aux
 	rm -f thesis.pdf
+

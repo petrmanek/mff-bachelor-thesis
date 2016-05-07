@@ -152,21 +152,21 @@ When implementing fitness evaluator classes, it is recommended that the class \t
 For instance, every subclass of \texttt{SequentialEvaluator<T>} can be combined with \textit{a cyclic evaluator}. This type encapsulates the other evaluator, which is called $N$ times for a single evaluation of every chromosome. From the result, $M$ of the best (or the worst) fitness values are selected. The final fitness of the chromosome is the average calculated from the selected values.
 
 \section{Genetic Operators}\label{section:genetic-operators}
-Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a genetic algorithm. When operators are applied, two sets of chromosomes are available: \textit{the current generation} and \textit{the offspring generation}. While the first can be only accessed for reading, the latter also supports writing. Every operator can select and read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome in the offspring generation.
+Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a genetic algorithm. When operators are applied, two sets of chromosomes are available: \textit{the current generation} and \textit{the offspring generation}. While the first can be only accessed for reading, the latter also supports writing. Every operator can thus select and read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome into the offspring generation.
 
-The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters when the operators are created. There are various types of selections, each with different properties and effects on the operators. For their detailed description, see section \ref{section:selection}.
+The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters of individual operators. There are various types of selections, each with different properties and effects. For their detailed description, see section \ref{section:selection}.
 
-The library offers implementation of three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to only these three. By creating descendants of the generic class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any operators of their own.
+The library offers implementation of three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to utilizing only these three in their applications. This section shows the usage of the implemented operators and gives details and recommendations on creating custom ones.
 
 \subsection{Reproduction}\label{section:reproduction}
-The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. Unlike others, this operator does not introduce any novelty into the offspring generation. Instead, its purpose is to stabilize the population by carrying certain traits between generations. This in effect prevents the loss of diversity and thereby avoids premature convergence of the algorithm.
+The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. Unlike others, this operator does not introduce any novelty into the offspring generation. Instead, its purpose is to simply stabilize the population by carrying certain traits between generations. This in effect prevents the loss of diversity and thereby avoids premature convergence of the algorithm.
 
 When applied on the population, the reproduction operator copies arbitrary number of selected chromosomes from the current generation to the next one without any modifications. Since the selection of individuals is independent of the operator implementation, it is technically possible to use any selection object with this operator. Nevertheless, it is worth noting that only fitness-proportionate strategies make sense in this context.
 
-Since chromosome data structures are immutable by definition, the reproduction operator requires them to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of themselves.
+Since chromosomes are immutable by definition, the reproduction operator requires their underlying data structures to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of themselves.
 
 \subsection{Mutation}\label{section:mutation}
-The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it copies selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The mutated chromosomes should generally resemble their original counterparts, while not being completely identical.
+The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it copies selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The mutated chromosomes generally resemble their original counterparts, but are not completely identical.
 
 In order to be used, the mutation operator requires the chromosome data structure it works on to conform to the \texttt{Mutable} protocol. Every container can thus have its own, slightly different implementation of mutation, which should be explained in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
 
@@ -205,13 +205,37 @@ Depending on the number and size of interchanged parts, multiple classes of cros
 
 For tree structures, crossover is implemented by selecting two random subtrees rooted in nodes, which are descendants of the same base class (either both nodes are action nodes or both are value nodes specialized in matching generic types). The execution of the operator is performed by swapping pointers to both subtrees.
 
-\subsection{Custom Operators}
+\subsection{Custom Operators}\label{section:custom-operators}
+By creating descendants of the generic abstract class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any operators of their own. The base class contains a selection object and an initializer method, which is used to configure the selection at the time of creation.
 
+The operator execution is controlled by the abstract \texttt{apply()} method, which receives a population to work on and an entropy generator object. In this method, the operator is expected to call the selection object once and provide it with both mentioned objects as well as the number of chromosomes needed for operator execution. The selection should then return a list of indices of the selected chromosomes, which can be accessed by the \texttt{individualAtIndex()} method. An example of a custom operator implementation is shown in Listing \ref{listing:custom-operator}.
 
-% protocol
+\begin{listing}[ht]
+	\inputswift{custom-operator}
+	\caption{Example of a custom genetic operator implementation.}
+	\label{listing:custom-operator}
+\end{listing}
+
+It is strongly recommended that genetic operators contain no additional selection logic on top of the results returned by the selection object. Instead, needs for such logic should be resolved by creating custom selection objects, which are capable of encapsulating other selection objects. This technique can be even applied in the operator initializer, forcing all selections to undergo such encapsulation, as shown in Listing \ref{listing:selection-encapsulation}.
+
+\begin{listing}[ht]
+	\inputswift{selection-encapsulation}
+	\caption{Example of a selection object encapsulation.}
+	\label{listing:selection-encapsulation}
+\end{listing}
+
+In order to better work the chromosome data structures, genetic operators can also define custom protocols, to which such structures can conform. By usage of Swift extensions, existing structures can be then altered to comply with any additional requirements.
 
 \subsection{Pipelines}\label{section:pipelines}
-\todo
+Pipelines describe the logic of sequential application of operators in genetic algorithms. The library includes Swift syntax extensions to facilitate effortless customization operator sequences. Every pipeline resembles a control-flow diagram. It is comprised of \textit{nodes}, which are concatenated in a finite sequence. Nodes often correspond to instances of application of genetic operators, but can also be configured to contain non-determinstic switches between \textit{branches}, which can contain other pipelines.
+
+Pipelines are defined by Swift operators \texttt{--->} and \texttt{|||}. The first concatenates sequence of operations and the latter invokes a non-deterministic switch between operations. Their application is shown is shown in Listing \ref{listing:pipeline-definition}.
+
+\begin{listing}[ht]
+	\inputswift{pipeline-definition}
+	\caption{Example of pipeline definition.}
+	\label{listing:pipeline-definition}
+\end{listing}
 
 \section{Selections}\label{section:selection}
 \todo

@@ -182,19 +182,31 @@ General guidelines for implementing mutation are:
 Clearly, among various data structures the semantical definition of \textit{a part} may differ. For instance, in arrays and range-initialized arrays, a part is thought to be any item of the array, whereas a part of a tree structure may be any of its subtrees.
 
 \subsection{Crossover}\label{section:crossover}
-The crossover operator represents an instance of sexual reproduction (also known as \textit{recombination}). Unlike the previous two operators, it requires the input of exactly two chromosomes from the current generation. During the execution of the operator, equivalent parts of selected chromosomes are randomly chosen and exchanged, producing two new chromosomes, both carrying certain traits of their parents.
+The crossover operator emulates the act of sexual reproduction of individuals in the nature (also known as \textit{recombination}). Unlike the previous two operators, it requires the input of exactly two chromosomes from the current generation, which are referred to as \textit{the parent chromosomes}. During the execution of the operator, equivalent parts of the parent chromosomes are randomly chosen and exchanged, producing two new chromosomes, which are inserted into the offspring generation. These chromosomes carry a mixture of traits of the parent chromosomes, and can therefore be thought of as their \textit{children}.
 
-Depending on the number and size of interchanged parts, multiple classes of crossover operators can be defined. For arrays and range-initialized arrays, two crossovers are implemented:
+Similarly to the mutation operator, in order for the crossover to be used with chromosomes, their underlying data structure must conform to a dedicated Swift protocol, which allows users to customize the behavior of the operator with respect to the architecture of the data structure. The general guidelines for implementing such customization are:
+~
+\begin{enumerate}
+	\item Select two distinct chromosomes in the current generation.
+	\item Choose pairs of \textit{equivalent parts} of the chromosomes at random.
+	\item Copy both chromosomes, swapping the parts in each pair.
+	\item Insert the modified chromosomes into the offspring generation.
+\end{enumerate}
+
+Depending on the number and size of interchanged parts, multiple classes of crossover operators\footnote{Each crossover operator has a dedicated Swift protocol.} can be defined. For arrays and range-initialized arrays, two crossovers are implemented:
 ~
 \begin{description}
 	\item[One-point crossover]
-	A single point is randomly chosen to divide both arrays in two parts. While the first pair of parts is kept at its original position, the second pair is swapped between the chromosomes.
+	A single point is randomly chosen to divide both arrays in two parts. While the first pair of parts is kept at its original position, the second pair is swapped. This crossover is represented by the \texttt{OnePointCrossoverable} protocol.
 
 	\item[Two-point crossover]
-	In analogous way to the one-point crossover, two points are randomly chosen to divide both arrays in three parts. The middle pair of parts is swapped between the chromosomes, whereas the remaining two pairs are left unmodified.
+	In analogous way to the one-point crossover, two points are randomly chosen to divide both arrays in three parts. The middle pair of parts is swapped between the chromosomes, whereas the remaining two pairs are left unmodified. This crossover is represented by the \texttt{TwoPointCrossoverable} protocol.
 \end{description}
 
-For tree structures, the crossover is implemented by selecting two random subtrees rooted in nodes, which are descendants of the same base class (either both nodes are action nodes or value nodes specialized on matching types). The crossover is performed when both subtrees are swapped between trees.
+For tree structures, crossover is implemented by selecting two random subtrees rooted in nodes, which are descendants of the same base class (either both nodes are action nodes or both are value nodes specialized in matching generic types). The execution of the operator is performed by swapping pointers to both subtrees.
+
+\subsection{Custom Operators}
+
 
 % protocol
 

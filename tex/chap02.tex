@@ -1,30 +1,30 @@
 \chapter{Library Documentation}
-This chapter contains technical documentation of individual components of the library, as well as examples of their usage.
+This chapter contains technical documentation of individual components of the library. To better illustrate some concepts, examples and code demonstrations are included.
+
+The overall architecture of the library is based on generics and object polymorphism. Since the library offers object definitions as well as their implementation, it often defines Swift \textit{protocols} (similar to interfaces in other programming languages) or ``abstract classes''\footnote{In conventional programming languages, abstract classes contain unimplemented method definitions. Since Swift does not support this paradigm, it is emulated through the mechanism of static precondition failures.}, which are implemented by some of its objects. The purpose of this approach is to offer users a selection of ready-to-use building blocks as well as the option of customization, useful in certain marginal situations.
 
 \section{Chromosomes}
-In the context of GA, \textit{a chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. Since the nature and representation of such information heavily depends on the application, the library allows full customization of the underlying data structures, which are used to hold chromosomes. The library also provides implementation of some of the most frequently used structures, leaving users free to decide, whether to use a structure supplied by the library, implement a custom one, or combine multiple data structures together.
-
-Within the library, chromosomes can be represented by any reference types, which conform to the \texttt{ChromosomeType} protocol. This protocol requires them to
+In the context of GA, \textit{a chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. \cite{GaPracticalHandbook} Within the library, chromosomes can be represented by any reference types, which conform to the \texttt{ChromosomeType} protocol. This protocol requires them to
 ~
 \begin{enumerate}
 	\item be immutable,\footnote{This is a semantical requirement implying that every chromosome modification will require a new instance of the type to be created.}
-	\item be capable of randomly generating new instances.\footnote{This is achieved by requiring conformance to the \texttt{Randomizable} protocol.}
+	\item be capable of randomly generating new instances of themselves.\footnote{This is achieved by requiring conformance to the \texttt{Randomizable} protocol.}
 \end{enumerate}
 
-This section explains, how to achieve common configurations using preimplemented types, how to customize them for different applications, and how to define custom data types for storing proprietary information.
+This section explains in detail, how to achieve common configurations using preimplemented types, how to customize them for different applications, and how to define custom data types for storing proprietary information.
 
 \subsection{Data Representation Problem}
 When designing chromosome data structures, users first need to decide which information should be stored within chromosomes and how should such information be encoded into primitive types. These questions might not always be trivial to answer and it is possible to show that 
 unfortunate choices could potentially impact the rate of convergence of the GA significantly. This is known as \textit{the problem of data representation}.
 
-It is worth noting at this point that the complexity of this problem extends far beyond the scope of this work, and is thus not addressed. For more information on this topic, readers are referred to ???. \todo
+It is worth noting at this point that the complexity of this problem extends far beyond the scope of this work, and is thus not addressed. For more information on this topic, readers are referred to \cite{GaPracticalHandbook}.
 
 \subsection{Strings}\label{section:strings}
-One of the most common ways of storing chromosomes is to encode them as strings of values of a same type, e. g. binary or numeric. Such strings are represented by \textit{range-initalized arrays}.
+A popular method of storing chromosomes is to encode them as strings of values of the same type, e. g. binary or numeric. The library represents such strings in the form of \textit{range-initalized arrays}.
 
-A range-initialized array is similar to a regular array in many ways. It is a generic list structure, which is capable of holding finite amounts of ordered homogeneous items. However, at the time of initialization, the number of elements in the array is set to a value, which non-deterministically selected from a given number interval. This allows for more flexibility, since in some applications, it is beneficial to vary not only the contents of the chromosome, but also its size. If this behavior is not required, the array can be configured to a constant length by using any interval of length zero.
+A range-initialized array is a generalization of a regular array. It is a generic list structure, which is capable of holding finite amounts of ordered homogeneous items. However, at the time of initialization, the number of elements in the array is set to a value, which randomly selected from a given number interval. This allows for more flexibility, since in some applications it is desirable to vary not only the contents of the chromosome, but also its size. If this behavior is not wanted, the array can be reconfigured to a constant length by specifying any interval of length zero.
 
-A simple usage of range-initialized arrays can be demonstrated on the Knapsack Problem. Suppose that there are 10 things of different sizes and values and a knapsack of a limited capacity. The objective is to select things in order to maximize the total value of knapsack contents, while not exceeeding its capacity. All solutions of this problem can be described as strings of 10 Boolean values, indicating whether items 1-10 are selected. These values can be stored in a range-initialized array with interval $[10;10]$ (implying that the array has fixed size 10), which is declared in Listing \ref{listing:array-knapsack}.
+A simple usage of range-initialized arrays can be demonstrated on finding solutions to the Knapsack Problem. Suppose that there are 10 things of different sizes and values and a knapsack of a limited capacity. The objective is to select things in order to maximize the total value of the knapsack contents, while not exceeeding its capacity. Clearly, all solutions of this problem can be described as strings of 10 Boolean values, indicating whether items 1-10 are selected. These values can be stored in a range-initialized array with interval $[10;10]$, implying that the array has fixed size 10. The array class is declared in Listing \ref{listing:array-knapsack}.
 
 \begin{listing}[ht]
 	\inputswift{array-knapsack}
@@ -32,26 +32,24 @@ A simple usage of range-initialized arrays can be demonstrated on the Knapsack P
 	\label{listing:array-knapsack}
 \end{listing}
 
-In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift extensions, every instance of range-initialized array automatically conforms to the \texttt{ChromosomeType} protocol and supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}). Range-initialized arrays can thus be directly used as chromosomes in the GA without any further modification.
+In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift type extensions, every instance of range-initialized array automatically conforms to the \texttt{ChromosomeType} protocol and supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}). Range-initialized arrays can thus be directly used as chromosomes in the GA without any further modification.
 
-It is worth noting at this point that strings are \textbf{not designed to store heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as bits, it can be encoded as a binary string, portions of which would be later interpretted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application.
-
-While this approach succeeds in its purpose, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item of the array, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
+It is worth noting at this point that strings are \textbf{not designed to hold heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as bits, it can be encoded as a binary string, portions of which would be later interpretted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application. While this approach succeeds in its purpose, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item of the array, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
 
 \subsection{Trees}
-Tree structures are commonly used in applications, which require automatic code generation. In such applications, chromosomes often contain control programs or mathematical formulas, which can be represented by tree graphs. The library allows to store such data in a collection of \textit{tree nodes}.
+Tree structures are commonly used in applications, which require automatic code generation. In such applications, individuals often carry chromosomes which contain control programs, mathematical formulas or similar information that can be represented by tree graphs. The library allows to represent such type of data by a collection of \textit{tree nodes}.
 
-A tree node is an abstract data structure, which can be configured to contain information of any type. In addition, tree nodes can point to multiple other tree nodes, linking the information they contain together, in order to form a forest. The library offers two basic types of tree nodes:
+A tree node is an abstract data structure, which can be configured to contain information of any type. In addition, tree nodes can point to multiple other tree nodes, linking the information they contain together, in order to form a forest. The library recognizes two fundamental types of tree nodes:
 ~
 \begin{description}
 	\item[Value Nodes (generic)]
-	The purpose of a value node is to produce a value of some kind. While the means of producing the value may differ (e. g. constant, function or binary operation) as well as its type, every value node must offer a way to retrieve its value at runtime.
+	The purpose of a value node is to produce a value of some kind. While the means of producing the value may differ (e. g. constant, function or binary operation) as well as its type, every value node must offer a way to retrieve its value at runtime. This type of node is represented by the generic class \texttt{ValueNode<T>}.
 
 	\item[Action Nodes]
-	The purpose of an action node is to perform an action at runtime. The action may be a command of some kind, or may call other action, possibly requiring arguments in the form of other value nodes.
+	The purpose of an action node is to perform an action at runtime. The action may be a command of some kind, or may call other action, possibly requiring arguments in the form of other value nodes. This type of node is represented by the class \texttt{ActionNode}.
 \end{description}
 
-Both types of nodes are easily extensible, allowing users to define their own functions, operations and commands depending on the application. This can be demonstrated on a simple maze robot simulation. Suppose that there is a robot, which can receive WAIT, GO, STOP, TURN-LEFT and TURN-RIGHT instructions in order to navigate in a 2-dimensional maze. The robot also carries a set of sensors capable of determining whether its front side is facing an obstacle. To auto-generate a control program for such robot, its commands can be formalized as 5 action nodes and the sensor output can be represented by a single Boolean value node. Example of such formalization is shown in Listing \ref{listing:tree-maze}.
+Both types of nodes are intentionally left abstract, guiding users to define their own node types for functions, operations and commands depending on their applications. This procedure is very simple and can be demonstrated on a maze robot simulation. Suppose that there is a robot, which can receive \texttt{WAIT}, \texttt{GO}, \texttt{STOP}, \texttt{TURN-LEFT} and \texttt{TURN-RIGHT} instructions in order to navigate a 2-dimensional maze. The robot is also capable of determining whether its front side is facing an obstacle. To auto-generate a control program for such robot, its instructions can be formalized as 5 subclasses the class \texttt{ActionNode} and the sensor output can be represented by a subclass of the class \texttt{ValueNode<Bool>}. Such formalization is shown in Listing \ref{listing:tree-maze}.
 
 \begin{listing}[ht]
 	\inputswift{tree-maze}
@@ -59,11 +57,16 @@ Both types of nodes are easily extensible, allowing users to define their own fu
 	\label{listing:tree-maze}
 \end{listing}
 
-It is concievable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce fundamental building blocks of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library offers various frequently used node types, ready to use:
+It is concievable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce fundamental building blocks of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library contains various preimplemented node types, ready to use:
 ~
-\begin{description}
-	\item[Constants and Operations]
-	Constant nodes contain static values of any type, unchanging during program execution. Operation nodes are generic templates for unary or binary operations applied on arguments, which are represented by other value nodes.
+\begin{description} 
+	\item[Constants]
+	Constant nodes (\texttt{ConstantNode<T>}) contain constant values of any type, unchanging during program execution.
+
+	\item[Operations]
+	Operation nodes (descendants of classes \texttt{UnaryOperation<T1,T2>} and \texttt{BinaryOperation<T1,T2,T3>}) are generic templates for functions. Arguments of such functions are represented by other value node instances.
+
+\todo % revisions finished up to here
 
 	\item[Comparisons]
 	Comparison nodes represent equality and inequality predicates, operating on tuples of value nodes.

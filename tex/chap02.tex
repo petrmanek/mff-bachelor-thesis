@@ -1,4 +1,4 @@
-\chapter{Library Implementation}
+\chapter{Library Documentation}
 This chapter contains technical documentation of individual components of the library, as well as examples of their usage.
 
 \section{Chromosome Data Structures}
@@ -206,9 +206,9 @@ Depending on the number and size of interchanged parts, multiple classes of cros
 For tree structures, crossover is implemented by selecting two random subtrees rooted in nodes, which are descendants of the same base class (either both nodes are action nodes or both are value nodes specialized in matching generic types). The execution of the operator is performed by swapping pointers to both subtrees.
 
 \subsection{Custom Operators}\label{section:custom-operators}
-By creating descendants of the generic abstract class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any operators of their own. The base class contains a selection object and an initializer method, which is used to configure the selection at the time of creation.
+By creating descendants of the generic abstract class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any operators of their own. This section gives details on implementing such subclasses.
 
-The operator execution is controlled by the abstract \texttt{apply()} method, which receives a population to work on and an entropy generator object. In this method, the operator is expected to call the selection object once and provide it with both mentioned objects as well as the number of chromosomes needed for operator execution. The selection should then return a list of indices of the selected chromosomes, which can be accessed by the \texttt{individualAtIndex()} method. An example of a custom operator implementation is shown in Listing \ref{listing:custom-operator}.
+The base class contains a selection object and an initializer method, which is used to configure the selection at the time of creation. This initializer must be called from any descendants as it is crucial to operator execution later on. The internal logic of the operator is controlled by the abstract \texttt{apply()} method, which receives a population to work on and an entropy generator object. In this method, the operator is expected to call the selection object exactly once and provide it with both mentioned objects as well as the number of chromosomes needed for its execution. The selection then returns a list of the selected chromosomes indices, which can be used to access chromosome contents through the \texttt{individualAtIndex()} method. To further illustrate this approach, an example of a custom operator implementation is shown in Listing \ref{listing:custom-operator}.
 
 \begin{listing}[ht]
 	\inputswift{custom-operator}
@@ -216,7 +216,7 @@ The operator execution is controlled by the abstract \texttt{apply()} method, wh
 	\label{listing:custom-operator}
 \end{listing}
 
-It is strongly recommended that genetic operators contain no additional selection logic on top of the results returned by the selection object. Instead, needs for such logic should be resolved by creating custom selection objects, which are capable of encapsulating other selection objects. This technique can be even applied in the operator initializer, forcing all selections to undergo such encapsulation, as shown in Listing \ref{listing:selection-encapsulation}.
+It is strongly recommended that genetic operators exert no additional selection logic on top of the results returned by the selection object. Instead, such logic is recommended to be resolved by creating custom selection objects, which are capable of encapsulating other selection objects. If required, this technique can be applied in the operator initializer, forcing all selections to undergo such encapsulation, as shown in Listing \ref{listing:selection-encapsulation}.
 
 \begin{listing}[ht]
 	\inputswift{selection-encapsulation}
@@ -224,12 +224,20 @@ It is strongly recommended that genetic operators contain no additional selectio
 	\label{listing:selection-encapsulation}
 \end{listing}
 
-In order to better work the chromosome data structures, genetic operators can also define custom protocols, to which such structures can conform. By usage of Swift extensions, existing structures can be then altered to comply with any additional requirements.
+In order to better work on the chromosome data structures, genetic operators can also define custom protocols, to which such structures can conform. By usage of Swift extensions, existing structures can be then altered to comply with any additional requirements specified by these protocols.
 
 \subsection{Pipelines}\label{section:pipelines}
-Pipelines describe the logic of sequential application of operators in genetic algorithms. The library includes Swift syntax extensions to facilitate effortless customization operator sequences. Every pipeline resembles a control-flow diagram. It is comprised of \textit{nodes}, which are concatenated in a finite sequence. Nodes often correspond to instances of application of genetic operators, but can also be configured to contain non-determinstic switches between \textit{branches}, which can contain other pipelines.
+Pipelines describe the logic of sequential application of operators in genetic algorithms. The library includes Swift syntax extensions to facilitate simple customization of operator sequences. Every pipeline resembles a control-flow diagram, it is comprised of individual \textit{nodes}, which are connected by oriented edges. There are two types of nodes:
+~
+\begin{description}
+	\item[Operator nodes]
+	Operator nodes correspond to instances of application of genetic operators.
 
-Pipelines are defined by Swift operators \texttt{--->} and \texttt{|||}. The first concatenates sequence of operations and the latter invokes a non-deterministic switch between operations. Their application is shown is shown in Listing \ref{listing:pipeline-definition}.
+	\item[Branching nodes]
+	Branching nodes contain non-deterministic switches between multiple choices. Every choice specifies its probability and a pipeline to execute, should it be selected.
+\end{description}
+
+Pipelines are defined by custom Swift operators. In order to concatenate pipeline nodes in a sequence, the three-dash arrow operator (e.g. \texttt{--->}) is used. Sequences produced by this operator resemble linked lists in their structure. The three-bar operator (e.g. \texttt{|||}) serves to determine choices in branching nodes. The syntax of both operators can be seen in Listing \ref{listing:pipeline-definition}.
 
 \begin{listing}[ht]
 	\inputswift{pipeline-definition}
@@ -238,26 +246,59 @@ Pipelines are defined by Swift operators \texttt{--->} and \texttt{|||}. The fir
 \end{listing}
 
 \section{Selections}\label{section:selection}
-The purpose of selection objects is to separate the methods of chromosome selection from the genetic operators. This approach allows users to easily combine operators with selection methods without the need for subclassing.
+The purpose of selection objects is to separate the methods of chromosome selection from the genetic operators. This approach allows users to easily combine operators with selection methods without the need for unnecessary subclassing.
 
-As input, selection objects receive three parameters from their genetic operators: the current generation (with fitness evaluations), an entropy generator and the number of requested chromosomes. In return, selection objects are expected to produce a list of indices of the selected chromosomes or fail with error should the population contain insufficient number of chromsomes. When accessing fitness evaluations, the library uses lazy-loading optimizations, in order to prevent unnecessary sorting and data aggregation. For that reason, selection objects are not required to specify fitness-related dependencies. Instead, additional caluclations are performed on the first instance, when the information is required.
+As input, selection objects receive three parameters from their genetic operators: the current generation (together with fitness evaluations), an entropy generator and the number of requested chromosomes. In return, selection objects are expected to produce a list of indices of the selected chromosomes or fail with error should the population contain insufficient number of chromsomes. When accessing fitness evaluations, the library uses lazy-loading optimizations, in order to prevent unnecessary sorting and data aggregation. For that reason, selection objects are not required to specify fitness-related dependencies. Instead, additional caluclations are performed on the first instance when the information is required.
 
 Similarly to genetic operators, the library offers the implementation of common selections and allows its users to customize their behavior, possibly creating their own subclasses. Such techniques are described at the end of this section.
 
 \subsection{Roulette Selection}
-\todo
+Roulette selection is one of the most basic fitness-proportionate selection methods used in genetic algorithms. When applied, each chromosome is assigned a normalized probability proportional to its current fitness value. Based on the assigned probabilities, a random generator then selects chromosomes from a discrete non-uniform distribution. This process can be likened to a spin of unfair roulette wheel, where every chromosome is allocated a sector with angle proportional to its fitness. \cite{GaConceptsDesigns}
+
+The application of this method can be shown on a simple example. Suppose that there are four chromosomes with fitness values 0.05, 0.4, 0.8 and 0.1. In order to generate a distribution, the roulette selection method merely normalizes fitness values to sum up to 1. Chromosomes are therefore assigned probabilities 0.04, 0.3, 0.59 and 0.07 respectively.
+
+In the library, roulette selection is represented by the \texttt{RouletteSelection} class, which has no arguments and can be combined with any genetic operator.
 
 \subsection{Rank Selection}
-\todo
+Rank selection is a modification of the roulette selection method, which is better suited for cases with extreme differences in fitness values. In such situations, often a small group of fit chromosomes receives the majority of the roulette wheel, causing the rest of the population to be mostly neglected, thus leading to premature convergence of the genetic algorithm.
+
+To resolve these cases, rank selection first sorts all chromosomes by their current fitness values. Every chromosome is then assigned a probability proportional to its rank in the sequence (hence the name of the method). For example, if rank selection had been used instead of roulette, the chromosomes in the example from the previous section would be assigned ranks 1, 3, 4, 2 respectively. These ranks would be simply normalized to probabilities 0.1, 0.3, 0.4 and 0.2.
+
+In the library, rank selection is represented by the \texttt{RankSelection} class, which has no arguments and can be combined with any genetic operator.
 
 \subsection{Tournament Selection}
-\todo
+Tournament selection provides selection pressure by holding a tournament among $s$ competitors, with $s$ being the tournament size (or order). The winner of the tournament is the chromosome with the highest fitness of the $s$ tournament competitors. \cite{GaTournamentSelection}
 
-\subsection{Extensions}
-\todo
+The library contains implementation of tournament selection, where competitors are chosen from the population by another selection object. By default, this secondary selection is random. However, by changing this argument, users can customize the behavior of the tournament selection significantly.
 
-\subsection{Optimizations}
-\todo
+This selection method is represented by the \texttt{TournamentSelection} class, which receives the value of parameter $s$ and the secondary selection object upon instantiation, and can be combined with any genetic operator.
+
+\subsection{Miscellaneous}
+In addition to the three methods described in previous sections, the library contains implementation of primitive selection objects, which serve as utilities for other selections or operators:
+~
+\begin{description}
+	\item[Random selection]
+	This method selects chromosomes at random with no regards to their fitness values. It is represented by the \texttt{RandomSelection} class, which has no arguments and can be combined with any genetic operator.
+
+	\item[Best selection]
+	This method deterministically selects chromosomes in the descending order of fitness values. It is represented by the \texttt{BestSelection} class, which has no arguments and can be combined with any genetic operator.
+
+	\item[Worst selection]	
+	This method deterministically selects chromosomes in the ascending order of fitness values. It is represented by the \texttt{WorstSelection} class, which has no arguments and can be combined with any genetic operator.
+\end{description}
+
+\subsection{Custom Selections}
+To create a selection object for a custom selection method, users need to subclass the generic class \texttt{Selection<T>}.
+
+The internal logic of any selection object is contained within the implementation of the abstract function \texttt{select()}. This function receives an entropy generator, a population, which serves as the domain for the selection, and the requested number of chromosomes to select. The expected output of the method is a set of zero-based indices pointing to the requested number of selected chromosomes in the population, which are not required to be distinct.
+
+In the implementation of the method, users are free to assume that the fitness evaluation of all chromosomes is available.  Moreover, it possible to declare additional parameters or secondary selection objects during instantiation. If necessary, selection objects can also declare auxiliary protocols for chromosome types, in order to better integrate with their contents. A basic implementation of a custom selection object is shown in Listing \ref{listing:custom-selection}.
+
+\begin{listing}[ht]
+	\inputswift{custom-selection}
+	\caption{Example of custom selection implementation.}
+	\label{listing:custom-selection}
+\end{listing}
 
 \section{Algorithms}
 \todo

@@ -1,8 +1,8 @@
 \chapter{Library Documentation}
 This chapter contains technical documentation of individual components of the library, as well as examples of their usage.
 
-\section{Chromosome Data Structures}
-In the context of genetic algorithms, \textit{a chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. Since the nature and representation of such information heavily depends on the application, the library allows full customization of the underlying data structures, which are used to hold chromosomes. The library also provides implementation of some of the most frequently used structures, leaving users free to decide, whether to use a structure supplied by the library, implement a custom one, or combine multiple data structures together.
+\section{Chromosomes}
+In the context of GA, \textit{a chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. Since the nature and representation of such information heavily depends on the application, the library allows full customization of the underlying data structures, which are used to hold chromosomes. The library also provides implementation of some of the most frequently used structures, leaving users free to decide, whether to use a structure supplied by the library, implement a custom one, or combine multiple data structures together.
 
 Within the library, chromosomes can be represented by any reference types, which conform to the \texttt{ChromosomeType} protocol. This protocol requires them to
 ~
@@ -15,7 +15,7 @@ This section explains, how to achieve common configurations using preimplemented
 
 \subsection{Data Representation Problem}
 When designing chromosome data structures, users first need to decide which information should be stored within chromosomes and how should such information be encoded into primitive types. These questions might not always be trivial to answer and it is possible to show that 
-unfortunate choices could potentially impact the rate of convergence of the genetic algorithm significantly. This is known as \textit{the problem of data representation}.
+unfortunate choices could potentially impact the rate of convergence of the GA significantly. This is known as \textit{the problem of data representation}.
 
 It is worth noting at this point that the complexity of this problem extends far beyond the scope of this work, and is thus not addressed. For more information on this topic, readers are referred to ???. \todo
 
@@ -32,7 +32,7 @@ A simple usage of range-initialized arrays can be demonstrated on the Knapsack P
 	\label{listing:array-knapsack}
 \end{listing}
 
-In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift extensions, every instance of range-initialized array automatically conforms to the \texttt{ChromosomeType} protocol and supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}). Range-initialized arrays can thus be directly used as chromosomes in genetic algorithms without any further modification.
+In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift extensions, every instance of range-initialized array automatically conforms to the \texttt{ChromosomeType} protocol and supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}). Range-initialized arrays can thus be directly used as chromosomes in the GA without any further modification.
 
 It is worth noting at this point that strings are \textbf{not designed to store heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as bits, it can be encoded as a binary string, portions of which would be later interpretted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application.
 
@@ -152,7 +152,7 @@ When implementing fitness evaluator classes, it is recommended that the class \t
 For instance, every subclass of \texttt{SequentialEvaluator<T>} can be combined with \textit{a cyclic evaluator}. This type encapsulates the other evaluator, which is called $N$ times for a single evaluation of every chromosome. From the result, $M$ of the best (or the worst) fitness values are selected. The final fitness of the chromosome is the average calculated from the selected values.
 
 \section{Genetic Operators}\label{section:genetic-operators}
-Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a genetic algorithm. When operators are applied, two sets of chromosomes are available: \textit{the current generation} and \textit{the offspring generation}. While the first can be only accessed for reading, the latter also supports writing. Every operator can thus select and read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome into the offspring generation.
+Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a GA. When operators are applied, two sets of chromosomes are available: \textit{the current generation} and \textit{the offspring generation}. While the first can be only accessed for reading, the latter also supports writing. Every operator can thus select and read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome into the offspring generation.
 
 The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters of individual operators. There are various types of selections, each with different properties and effects. For their detailed description, see section \ref{section:selection}.
 
@@ -227,7 +227,7 @@ It is strongly recommended that genetic operators exert no additional selection 
 In order to better work on the chromosome data structures, genetic operators can also define custom protocols, to which such structures can conform. By usage of Swift extensions, existing structures can be then altered to comply with any additional requirements specified by these protocols.
 
 \subsection{Pipelines}\label{section:pipelines}
-Pipelines describe the logic of sequential application of operators in genetic algorithms. The library includes Swift syntax extensions to facilitate simple customization of operator sequences. Every pipeline resembles a control-flow diagram, it is comprised of individual \textit{nodes}, which are connected by oriented edges. There are two types of nodes:
+Pipelines describe the logic of sequential application of operators in the GA. The library includes Swift syntax extensions to facilitate simple customization of operator sequences. Every pipeline resembles a control-flow diagram, it is comprised of individual \textit{nodes}, which are connected by oriented edges. There are two types of nodes:
 ~
 \begin{description}
 	\item[Operator nodes]
@@ -253,14 +253,14 @@ As input, selection objects receive three parameters from their genetic operator
 Similarly to genetic operators, the library offers the implementation of common selections and allows its users to customize their behavior, possibly creating their own subclasses. Such techniques are described at the end of this section.
 
 \subsection{Roulette Selection}
-Roulette selection is one of the most basic fitness-proportionate selection methods used in genetic algorithms. When applied, each chromosome is assigned a normalized probability proportional to its current fitness value. Based on the assigned probabilities, a random generator then selects chromosomes from a discrete non-uniform distribution. This process can be likened to a spin of unfair roulette wheel, where every chromosome is allocated a sector with angle proportional to its fitness. \cite{GaConceptsDesigns}
+Roulette selection is one of the most basic fitness-proportionate selection methods used in the GA. When applied, each chromosome is assigned a normalized probability proportional to its current fitness value. Based on the assigned probabilities, a random generator then selects chromosomes from a discrete non-uniform distribution. This process can be likened to a spin of unfair roulette wheel, where every chromosome is allocated a sector with angle proportional to its fitness. \cite{GaConceptsDesigns}
 
 The application of this method can be shown on a simple example. Suppose that there are four chromosomes with fitness values 0.05, 0.4, 0.8 and 0.1. In order to generate a distribution, the roulette selection method merely normalizes fitness values to sum up to 1. Chromosomes are therefore assigned probabilities 0.04, 0.3, 0.59 and 0.07 respectively.
 
 In the library, roulette selection is represented by the \texttt{RouletteSelection} class, which has no arguments and can be combined with any genetic operator.
 
 \subsection{Rank Selection}
-Rank selection is a modification of the roulette selection method, which is better suited for cases with extreme differences in fitness values. In such situations, often a small group of fit chromosomes receives the majority of the roulette wheel, causing the rest of the population to be mostly neglected, thus leading to premature convergence of the genetic algorithm.
+Rank selection is a modification of the roulette selection method, which is better suited for cases with extreme differences in fitness values. In such situations, often a small group of fit chromosomes receives the majority of the roulette wheel, causing the rest of the population to be mostly neglected, thus leading to premature convergence of the GA.
 
 To resolve these cases, rank selection first sorts all chromosomes by their current fitness values. Every chromosome is then assigned a probability proportional to its rank in the sequence (hence the name of the method). For example, if rank selection had been used instead of roulette, the chromosomes in the example from the previous section would be assigned ranks 1, 3, 4, 2 respectively. These ranks would be simply normalized to probabilities 0.1, 0.3, 0.4 and 0.2.
 

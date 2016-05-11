@@ -57,7 +57,7 @@ Both types of nodes are intentionally left abstract, guiding users to define the
 	\label{listing:tree-maze}
 \end{listing}
 
-It is concievable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce fundamental building blocks of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library contains various preimplemented node types, ready to use:
+It is conceivable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce fundamental building blocks of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library contains various bundled node types, ready to use:
 ~
 \begin{description} 
 	\item[Constants]
@@ -66,19 +66,17 @@ It is concievable that combinations of various tree nodes can be translated into
 	\item[Operations]
 	Operation nodes (descendants of classes \texttt{UnaryOperation<T1,T2>} and \texttt{BinaryOperation<T1,T2,T3>}) are generic templates for functions. Arguments of such functions are represented by other value node instances.
 
-\todo % revisions finished up to here
-
 	\item[Comparisons]
-	Comparison nodes represent equality and inequality predicates, operating on tuples of value nodes.
+	Comparison nodes represent equality (\texttt{EquationNode<T>}) and inequality predicates (\texttt{ComparisonNode<T>}), operating on tuples of other value node instances.
 
 	\item[Arithmetic and Boolean Operations]
 	For any numeric value nodes, addition, subtraction, multiplication, division and modulation are supported. In analogy, Boolean value nodes support negation, conjunction, disjunction, implication and equivalence.
 
 	\item[Control-flow Primitives]
-	Action nodes can be combined in sequences, loops or simple conditional expressions.
+	Action nodes can be combined in sequences, loops or simple conditional expressions. Names of the node types responsible for this functionality are analogous to those listed above.
 \end{description}
 
-It is recommended that tree factories are instantiated in the global context, or in subclasses of entropy generators (see Listing \ref{listing:tree-factory}). Apart from controlling the type of generated nodes, factories allow to control the depth and width of the tree, bounding the number of generated structures.
+It is recommended that tree factories are instantiated in the global context, or in subclasses of entropy generators (see Listing \ref{listing:tree-factory}). Apart from controlling the type of generated nodes, factories allow to specify upper bounds of the depth and width of the tree, restricting the number of generated structures.
 
 \begin{listing}[ht]
 	\inputswift{tree-factory}
@@ -87,9 +85,9 @@ It is recommended that tree factories are instantiated in the global context, or
 \end{listing}
 
 \subsection{Custom Types}\label{section:custom-types}
-If the chromosome information is not compatible with strings or trees, or is heterogeneous in its nature, it is recommended that a custom data type is declared to hold it. This allows users to name, document and describe individual parts of the chromosome, as well as to customize its behavior at important points of evaluation.
+If the chromosome information is not compatible with strings or trees, or is heterogeneous in its nature, it is recommended that a custom data type is declared to hold it. This allows users to label, document and describe individual parts of the chromosome, as well as to customize its behavior at important points of evaluation.
 
-Any reference type can become a chromosome data structure, if it conforms to the \texttt{ChromosomeType} protocol (and its inherited protocols). No other protocol conformance is formally required. Nevertheless, it is worth noting that some genetic operators require chromosomes to conform to other proprietary protocols, in order to operate on them. For instance, the \texttt{Mutable} protocol, which is required by the \texttt{Mutation} operator. For full listing of such protocols, see section \ref{section:genetic-operators}.
+Any reference type can become a chromosome data structure, if it conforms to the \texttt{ChromosomeType} protocol (and its inherited protocols). No other protocol conformance is formally required. Nevertheless, it is worth noting that some genetic operators may require chromosomes to conform to other proprietary protocols, in order to operate on them. For instance, the \texttt{Mutable} protocol, which is required by the \texttt{Mutation} operator. For description of such protocols, see section \ref{section:genetic-operators}.
 
 Declaration of custom types can be demonstrated on The Hamburger Restaurant Problem, mentioned in the introduction\footnote{For the purposes of this work, the example has been slightly altered.} of \cite{Koza1992}. The objective is to find a business strategy for a chain of hamburger restaurants, which yields the biggest profit. A strategy consists of three decisions:
 ~
@@ -104,7 +102,7 @@ Declaration of custom types can be demonstrated on The Hamburger Restaurant Prob
 	Should the restaurant provide slow, leisurely service by waiters in tuxedos or fast, snappy service by waiters in white polyester uniforms?
 \end{description}
 
-Clearly every strategy is a heterogeneous data structure. Although it could be encoded into a binary string as proposed in section \ref{section:strings}, it is much safer and more elegant to declare a dedicated type to hold its information. Such declaration is shown in Listing \ref{listing:hamburger-sample}.
+Clearly, every strategy is a heterogeneous data structure. Although it could be encoded into a binary string as proposed in section \ref{section:strings}, it is much safer and more elegant to declare a dedicated type to hold its information. Such declaration is shown in Listing \ref{listing:hamburger-sample}.
 
 \begin{listing}[ht]
 	\inputswift{hamburger-sample}
@@ -118,18 +116,26 @@ Lastly, it is worth mentioning that types which are capable of listing all their
 
 \begin{listing}[ht]
 	\inputswift{discrete-sample}
-	\caption{Declaration of a randomizable type through a discrete listing of values.}
+	\caption{Declaration of a chromosome type through a discrete listing of values.}
 	\label{listing:discrete-sample}
 \end{listing}
 
-As shown by the demonstrations, declaration of custom types for heterogeneous chromosomes in Swift is effortless, safe and efficient. However, the reader should not be misled into thinking it only serves for creating nicely annotated vessels for information. This technique can be also used to create genotype containers with customized behavior and proprietary internal structure, which is most notably exemplified in strings and trees, as both types are implemented in this way.
+As shown by the demonstrations, declaration of custom types for heterogeneous chromosomes in Swift is effortless, safe and efficient. However, the reader should not be misled into thinking it only serves for creating nicely annotated vessels for information. This technique can be also used to create more complex genotype containers with customized behavior and proprietary internal structure, which is most notably exemplified by strings and trees, as both types are implemented in this way.
 
 \section{Population Evaluation}
-In order to assess and compare the quality of chromosomes with respect to the problem at hand, a common fitness evaluation model is used. In this model, every chromosome is assigned a decimal value from the $[0;1]$ interval by a \textit{fitness function}, which is heavily dependent on the application and thus specified by the user. The fitness function is encapsulated in an \textit{evaluator} object, which is active for the entire duration of evaluation.
+In order to assess and compare the quality of chromosomes with respect to the optimization problem at hand, a common fitness evaluation model is used. In this model, every chromosome is assigned a value from the $[0;1]$ interval by a \textit{fitness function}, which is heavily dependent on the application and thus required to be specified by the user.
 
-This approach allows users to possibly speed up the evaluation process by minimizing overhead needed to set up and tear down other components and structures required to perform the evaluation, such as simulation environments, inter-process communication sockets, etc. The library supports evaluation in two modes: sequentially or in parallel. While the sequential mode is easy to implement but more time-consuming, the parallel mode requires the internals of the fitness function to be compatible with multi-threaded processing, which may not always be possible.
+The fitness function is encapsulated in an \textit{evaluator} object, which is active for the entire duration of evaluation. The purpose of this encapsulation is to enable the possibility of accelerating the evaluation process by minimizing computing overhead needed to set up and tear down other components required to perform the evaluation itself. Since fitness functions often involve resource-expensive simulations and randomized testing scenarios, such optimization may be efficient.
 
-To demonstrate implementation of a simple sequential evaluator, recall the chromosome structure\footnote{The Knapsack Problem is defined in section \ref{section:strings}. For chromosome structure, see Listing \ref{listing:array-knapsack}} for the Knapsack Problem. Suppose the fitness function is defined as
+\subsection{Mating Pool}
+In the context of population evaluation, a \textit{mating pool} represents a collection of individuals relevant to the current iteration of the GA. The pool is divided in two parts: the \textit{current generation} and the \textit{offspring}. Evaluators operate only on the first of these two.
+
+Apart from chromosomes, individuals in the mating pool also have an optional field dedicated for their fitness value. When a new individual is inserted into the population, value of this field is not present. However, individuals transitioning between generations carry their previously set fitness with them. In a single iteration of the GA, the fundamental purpose of an evaluator object is to ensure that all individuals in the current generation have a non-null fitness value.
+
+\subsection{Sequential and Parallel Evaluators}
+The library supports two evaluation modes: \textit{sequential} and \textit{parallel}. While the sequential mode is easier to implement but leads to slower evaluation, the parallel mode is faster but requires the internals of the fitness function to be compatible with multi-threaded processing, which may not always be feasible with respect to the problem definition.
+
+To demonstrate implementation of a simple sequential evaluator, recall the chromosome structure, which was proposed earlier\footnote{The Knapsack Problem is defined in section \ref{section:strings}. For chromosome structure, see Listing \ref{listing:array-knapsack}} for the Knapsack Problem. Suppose the fitness function is defined as
 ~
 \begin{align}
 	f(c_1, c_2, \dots, c_{10})
@@ -148,70 +154,80 @@ where $S_{max}$ represents the maximum capacity of the knapsack, $\{s_i\}_{i=1}^
 	\label{listing:evaluator-sequential}
 \end{listing}
 
-In the example, the evaluator is a descendant of \texttt{SequentialEvaluator<T>}, which is a common generic base class for all sequential evaluators. Similarly, all parallel evaluators are descendants of the \texttt{ParallelEvaluator<T>} class, which instantiates multiple sequential evaluators operating on different threads and manages internal producer-consumer queue to facilitate parallel evaluation of chromosomes. Moreover, both types of evaluators inherit from \texttt{Evaluator<T>}, an abstract class which defines the formal requirements on all evaluator objects.
+In the example, the evaluator is a descendant of the generic abstract class \texttt{SequentialEvaluator<T>}, which is a common base class for all sequential evaluators. Similarly, all parallel evaluators have to be descendants of the class \texttt{ParallelEvaluator<T>}, which instantiates multiple sequential evaluators operating on different threads and manages internal producer-consumer queue to facilitate parallel evaluation of chromosomes. Moreover, both types of evaluators inherit from \texttt{Evaluator<T>}, an abstract class which defines the formal requirements on all evaluator objects.
 
-When implementing fitness evaluator classes, it is recommended that the class \texttt{Evaluator<T>} is directly subclassed only in cases, when the evaluation scheme is incompatible the other existing subclasses. A good example of such scenario would be an evaluator utilizing distributed computing cluster. However, directly subclassing \texttt{Evaluator<T>} only to create a custom implementation of sequential evaluator is not advisable, since \texttt{SequentialEvaluator<T>} is integrated into other parts of the library and avoiding it would prevent users from interacting with such parts.
+When implementing fitness evaluator classes, it is recommended that the class \texttt{Evaluator<T>} is directly subclassed only in cases, when the evaluation scheme is incompatible the other already existing subclasses. A good example of such scenario would be an evaluator utilizing a distributed computing cluster. However, directly subclassing \texttt{Evaluator<T>} only to create a custom implementation of sequential evaluator is not advisable, since \texttt{SequentialEvaluator<T>} is integrated into other components of the library and avoiding its use would introduce subsequent issues.
 
-For instance, every subclass of \texttt{SequentialEvaluator<T>} can be combined with \textit{a cyclic evaluator}. This type encapsulates the other evaluator, which is called $N$ times for a single evaluation of every chromosome. From the result, $M$ of the best (or the worst) fitness values are selected. The final fitness of the chromosome is the average calculated from the selected values.
+\subsection{Cyclic Evaluators}
+Every descendant of the class \texttt{SequentialEvaluator<T>} is eligible to be combined with a \textit{cyclic evaluator} (represented by the class \texttt{CyclicEvaluator<T>}). Instances of cyclic evaluators encapsulate other evaluators, which are called multiple times in order to evaluate a single chromosome. Such sub-evaluations are then statistically aggregated to produce a final fitness value. This procedure mimics a commonly used technique in GA fitness evaluation, which yields more stable and reliable fitness values, especially in randomized simulations.
+
+Usage of cyclic evaluators is straightforward. At the instantiation time, a cyclic evaluator receives 3 parameters: a sequential evaluator, and numbers $n$ and $m$. Upon evaluation of an individual, the sequential evaluator is called $n$ times, producing a vector of $n$ fitness sub-evaluations. From this vector, $m$ of the highest (or the lowest) fitness values are then selected. The final fitness value returned by the cyclic evaluator is the average calculated from the selected values.
 
 \section{Genetic Operators}\label{section:genetic-operators}
-Genetic operators are procedures, which are performed on sets of chromosomes during the evaluation of a GA. When operators are applied, two sets of chromosomes are available: \textit{the current generation} and \textit{the offspring generation}. While the first can be only accessed for reading, the latter also supports writing. Every operator can thus select and read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome into the offspring generation.
+Genetic operators are procedures, which are performed on collections of individuals during the evaluation of the GA in order to transition to a next iteration. When operators are applied, the entire mating pool is available to them. While the current generation can be merely accessed for reading, the offspring generation also supports writing. Every operator can thus read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome into the offspring generation.
 
-The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters of individual operators. There are various types of selections, each with different properties and effects. For their detailed description, see section \ref{section:selection}.
+The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters of individual operators. There are various types of selections, each providing the selection pressure in a different way, thus being suitable for different classes of applications. For the description of supported selection methods, see section \ref{section:selection}.
 
-The library offers implementation of three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to utilizing only these three in their applications. This section shows the usage of the implemented operators and gives details and recommendations on creating custom ones.
+The library offers implementation of three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to only these three. This section shows the usage of the preimplemented operators and gives details and recommendations on creating custom ones.
 
 \subsection{Reproduction}\label{section:reproduction}
-The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. Unlike others, this operator does not introduce any novelty into the offspring generation. Instead, its purpose is to simply stabilize the population by carrying certain traits between generations. This in effect prevents the loss of diversity and thereby avoids premature convergence of the algorithm.
+The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. Unlike others, this operator does not introduce any novelty into the offspring generation. Instead, its purpose is to simply stabilize the population by carrying certain traits between generations. This in effect prevents the loss of diversity and thereby avoids premature convergence of the GA.
 
 When applied on the population, the reproduction operator copies arbitrary number of selected chromosomes from the current generation to the next one without any modifications. Since the selection of individuals is independent of the operator implementation, it is technically possible to use any selection object with this operator. Nevertheless, it is worth noting that only fitness-proportionate strategies make sense in this context.
 
-Since chromosomes are immutable by definition, the reproduction operator requires their underlying data structures to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of themselves.
+\todo % Reproducible do appky
+
+Since individuals are immutable by definition, the reproduction operator requires their underlying chromosome data structures to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of their instances.
 
 \subsection{Mutation}\label{section:mutation}
-The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it copies selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The mutated chromosomes generally resemble their original counterparts, but are not completely identical.
+The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it operates by copying selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The degree of mutation in the chromosomes is static and determined by the implementation. In general, mutated chromosomes can be expected to mostly resemble their original counterparts but not be completely identical.
 
-In order to be used, the mutation operator requires the chromosome data structure it works on to conform to the \texttt{Mutable} protocol. Every container can thus have its own, slightly different implementation of mutation, which should be explained in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
+In order to be used in the GA, the mutation operator requires chromosome data structures to conform to the \texttt{Mutable} protocol. Every container can thus have its own, slightly different implementation of mutation, which should be defined in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
 
 General guidelines for implementing mutation are:
 ~
 \begin{enumerate}
 	\item Select one chromosome in the current generation.
-	\item Choose \textit{a part} of the chromosome at random.
+	\item Choose a ``part'' of the chromosome at random.
 	\item Copy the chromosome, substituting the chosen part for a randomly generated equivalent.
 	\item Insert the modified chromosome into the offspring generation.
 \end{enumerate}
 
-Clearly, among various data structures the semantical definition of \textit{a part} may differ. For instance, in arrays and range-initialized arrays, a part is thought to be any item of the array, whereas a part of a tree structure may be any of its subtrees.
+Clearly, among various data structures the semantical definition of a ``part'' may differ. For instance, in arrays and range-initialized arrays, a part is defined as an item of the array. Since arrays are homogeneous, all their are equivalent by definition. In contrast, a part of a tree node structure is defined as a rooted subtree. Two subtrees are equivalent if the fundamental base classes of their root nodes match.
 
 \subsection{Crossover}\label{section:crossover}
 The crossover operator emulates the act of sexual reproduction of individuals in the nature (also known as \textit{recombination}). Unlike the previous two operators, it requires the input of exactly two chromosomes from the current generation, which are referred to as \textit{the parent chromosomes}. During the execution of the operator, equivalent parts of the parent chromosomes are randomly chosen and exchanged, producing two new chromosomes, which are inserted into the offspring generation. These chromosomes carry a mixture of traits of the parent chromosomes, and can therefore be thought of as their \textit{children}.
 
-Similarly to the mutation operator, in order for the crossover to be used with chromosomes, their underlying data structure must conform to a dedicated Swift protocol, which allows users to customize the behavior of the operator with respect to the architecture of the data structure. The general guidelines for implementing such customization are:
+Similarly to the mutation operator, in order for the crossover to be used with chromosomes, their underlying data structure must conform to a dedicated Swift protocol, which allows users to customize the behavior of the operator with respect to the architecture of the data structure. The general guidelines for implementing such customizations are:
 ~
 \begin{enumerate}
 	\item Select two distinct chromosomes in the current generation.
-	\item Choose pairs of \textit{equivalent parts} of the chromosomes at random.
+	\item Choose pairs of ``equivalent parts'' of the chromosomes at random.
 	\item Copy both chromosomes, swapping the parts in each pair.
 	\item Insert the modified chromosomes into the offspring generation.
 \end{enumerate}
 
+\todo % implementovat 2-point crossover
 Depending on the number and size of interchanged parts, multiple classes of crossover operators\footnote{Each crossover operator has a dedicated Swift protocol.} can be defined. For arrays and range-initialized arrays, two crossovers are implemented:
 ~
 \begin{description}
 	\item[One-point crossover]
-	A single point is randomly chosen to divide both arrays in two parts. While the first pair of parts is kept at its original position, the second pair is swapped. This crossover is represented by the \texttt{OnePointCrossoverable} protocol.
+	A single point is randomly chosen to divide both arrays in two parts. While the first pair of parts is kept at its original position, the second pair is swapped. This crossover is represented by the protocol \texttt{OnePointCrossoverable}.
 
 	\item[Two-point crossover]
-	In analogous way to the one-point crossover, two points are randomly chosen to divide both arrays in three parts. The middle pair of parts is swapped between the chromosomes, whereas the remaining two pairs are left unmodified. This crossover is represented by the \texttt{TwoPointCrossoverable} protocol.
+	In analogous way to the one-point crossover, two points are randomly chosen to divide both arrays in three parts. The middle pair of parts is swapped between the chromosomes, whereas the remaining two pairs are left unmodified. This crossover is represented by the protocol \texttt{TwoPointCrossoverable}.
 \end{description}
 
-For tree structures, crossover is implemented by selecting two random subtrees rooted in nodes, which are descendants of the same base class (either both nodes are action nodes or both are value nodes specialized in matching generic types). The execution of the operator is performed by swapping pointers to both subtrees.
+For tree node structures, crossover is implemented by selecting two random subtrees rooted in nodes, which are descendants of matching fundamental base classes. The execution of the operator is performed by swapping pointers to both subtrees. This crossover is represented by the protocol \texttt{TreeCrossoverable}.
+
+\todo % implementovat tree crossover
 
 \subsection{Custom Operators}\label{section:custom-operators}
-By creating descendants of the generic abstract class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any operators of their own. This section gives details on implementing such subclasses.
+By creating descendants of the generic abstract class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any genetic operators of their own. This section gives details and recommendations on implementing such subclasses.
 
-The base class contains a selection object and an initializer method, which is used to configure the selection at the time of creation. This initializer must be called from any descendants as it is crucial to operator execution later on. The internal logic of the operator is controlled by the abstract \texttt{apply()} method, which receives a population to work on and an entropy generator object. In this method, the operator is expected to call the selection object exactly once and provide it with both mentioned objects as well as the number of chromosomes needed for its execution. The selection then returns a list of the selected chromosomes indices, which can be used to access chromosome contents through the \texttt{individualAtIndex()} method. To further illustrate this approach, an example of a custom operator implementation is shown in Listing \ref{listing:custom-operator}.
+The base class contains a selection object and an initializer method, which is used to configure the selection at the time of creation. This initializer must be called from any descendants as it is crucial to operator execution later on. The internal logic of the operator is controlled by the abstract method \texttt{apply()}, which receives a mating pool and an entropy generator object. In this method, the operator is expected to call the selection object exactly once and provide it with both mentioned objects as well as the number of individuals needed for its execution. The selection then returns a list of the selected indices, which can be used to access the objects of individuals containing chromosome data and fitness evaluations. To further illustrate this approach, an example of a custom operator implementation is shown in Listing \ref{listing:custom-operator}.
+
+\todo % revidováno až sem
 
 \begin{listing}[ht]
 	\inputswift{custom-operator}

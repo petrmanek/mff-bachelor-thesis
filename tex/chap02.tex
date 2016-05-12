@@ -57,7 +57,24 @@ Both types of nodes are intentionally left abstract, guiding users to define the
 	\label{listing:tree-maze}
 \end{listing}
 
-It is conceivable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture. To produce fundamental building blocks of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library contains various bundled node types, ready to use:
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}[sibling distance=10em,
+	  every node/.style = {shape=rectangle, rounded corners,
+	    draw, align=center,
+	    top color=white, bottom color=blue!20}]]
+	  \node {Root:\\\texttt{LoopNode}}
+	    child { node {Termination:\\\texttt{ObstacleSensorNode}} }
+	    child { node {Action:\\\texttt{SequenceNode}}
+	      child { node {\texttt{GoCommandNode}}}
+	      child { node {\texttt{WaitCommandNode}} } };
+	\end{tikzpicture}
+	\caption{Example program for the maze robot simulation, which makes the robot go forward until it encounters an obstacle.}
+	\label{figure:example-program}
+\end{figure}
+
+
+It is conceivable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture (as illustrated in Figure \ref{figure:example-program}). To produce fundamental building blocks of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library contains various bundled node types, ready to use:
 ~
 \begin{description} 
 	\item[Constants]
@@ -164,14 +181,14 @@ Every descendant of the class \texttt{SequentialEvaluator<T>} is eligible to be 
 Usage of cyclic evaluators is straightforward. At the instantiation time, a cyclic evaluator receives 3 parameters: a sequential evaluator, and numbers $n$ and $m$. Upon evaluation of an individual, the sequential evaluator is called $n$ times, producing a vector of $n$ fitness sub-evaluations. From this vector, $m$ of the highest (or the lowest) fitness values are then selected. The final fitness value returned by the cyclic evaluator is the average calculated from the selected values.
 
 \section{Genetic Operators}\label{section:genetic-operators}
-Genetic operators are procedures, which are performed on collections of individuals during the evaluation of the GA in order to transition to a next iteration. When operators are applied, the entire mating pool is available to them. While the current generation can be merely accessed for reading, the offspring generation also supports writing. Every operator can thus read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome into the offspring generation.
+Genetic operators are procedures, which are performed on collections of individuals during the evaluation of the GA in order to transition between iterations. When operators are applied, the entire mating pool is available to them. While the current generation can be merely accessed for reading, the offspring generation also supports writing. Every operator can thus read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome into the offspring generation.
 
 The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters of individual operators. There are various types of selections, each providing the selection pressure in a different way, thus being suitable for different classes of applications. For the description of supported selection methods, see section \ref{section:selection}.
 
 The library offers implementation of three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to only these three. This section shows the usage of the preimplemented operators and gives details and recommendations on creating custom ones.
 
 \subsection{Reproduction}\label{section:reproduction}
-The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. Unlike others, this operator does not introduce any novelty into the offspring generation. Instead, its purpose is to simply stabilize the population by carrying certain traits between generations. This in effect prevents the loss of diversity and thereby avoids premature convergence of the GA.
+The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. Unlike others, this operator does not introduce any novelty into the offspring generation. Instead, its purpose is to simply stabilize the population by carrying certain traits between generations. This in effect prevents the loss of diversity and thereby avoids premature convergence of the GA, which may lead to a suboptimal solution.
 
 When applied on the population, the reproduction operator copies arbitrary number of selected chromosomes from the current generation to the next one without any modifications. Since the selection of individuals is independent of the operator implementation, it is technically possible to use any selection object with this operator. Nevertheless, it is worth noting that only fitness-proportionate strategies make sense in this context.
 
@@ -180,7 +197,7 @@ When applied on the population, the reproduction operator copies arbitrary numbe
 Since individuals are immutable by definition, the reproduction operator requires their underlying chromosome data structures to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of their instances.
 
 \subsection{Mutation}\label{section:mutation}
-The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it operates by copying selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The degree of mutation in the chromosomes is static and determined by the implementation. In general, mutated chromosomes can be expected to mostly resemble their original counterparts but not be completely identical.
+The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it operates by copying selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The degree of mutation in the chromosomes is static and determined by the implementation. In general, mutated chromosomes can be expected to mostly resemble their original counterparts, yet not be completely identical.
 
 In order to be used in the GA, the mutation operator requires chromosome data structures to conform to the \texttt{Mutable} protocol. Every container can thus have its own, slightly different implementation of mutation, which should be defined in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
 
@@ -245,22 +262,23 @@ It is strongly recommended that genetic operators exert no additional selection 
 
 In order to better work on the chromosome data structures, genetic operators can also define custom protocols, to which such structures can conform. By usage of Swift extensions, existing structures can be then altered to comply with any additional requirements specified by these protocols.
 
-\subsection{Pipelines}\label{section:pipelines}
-Pipelines describe the logic of sequential application of operators in the GA. The library includes Swift syntax extensions to facilitate simple customization of operator sequences. Every pipeline resembles a control-flow diagram, it is comprised of individual \textit{nodes}, which are connected by oriented edges. There are two types of nodes:
+\subsection{Decision Trees}\label{section:decision-trees}
+Decision trees are used to describe the sequential application of operators in the GA. The library includes Swift syntax extensions to facilitate simple customization of such operator sequences. Two types of nodes are supported:
 ~
 \begin{description}
 	\item[Operator nodes]
 	Operator nodes correspond to instances of application of genetic operators.
 
-	\item[Branching nodes]
-	Branching nodes contain non-deterministic switches between multiple choices. Every choice specifies its probability and a pipeline to execute, should it be selected.
+	\item[Chance nodes]
+	Chance nodes contain non-deterministic switches between multiple choices. Every choice specifies its probability and a decision subtree to execute, should it be selected.
 \end{description}
 
-Pipelines are defined by custom Swift operators. In order to concatenate pipeline nodes in a sequence, the three-dash arrow operator (e.g. \texttt{--->}) is used. Sequences produced by this operator resemble linked lists in their structure. The three-bar operator (e.g. \texttt{|||}) serves to determine choices in branching nodes. The syntax of both operators can be seen in Listing \ref{listing:pipeline-definition}.
+To ease their usage, decision trees are defined by custom Swift operators. In order to concatenate tree nodes in a sequence, the three-dash arrow operator (e.g. \texttt{--->}) is used. Sequences produced by this operator resemble linked lists in their structure. The three-bar operator (e.g. \texttt{|||}) serves to determine choices in chance nodes. The syntax of both operators can be seen in Listing \ref{listing:pipeline-definition}.
 
 \begin{listing}[ht]
 	\inputswift{pipeline-definition}
 	\caption{Example of pipeline definition.}
+	\todo % předělat na decision tree
 	\label{listing:pipeline-definition}
 \end{listing}
 
@@ -319,11 +337,87 @@ In the implementation of the method, users are free to assume that the fitness e
 	\label{listing:custom-selection}
 \end{listing}
 
-\section{Algorithms}
-\todo
+\section{Execution}
+The library provides a simple interface for definition and configuration of the GA through the class \texttt{GeneticAlgorithm<T>}. In instances of this class, various components of the library come together to form a robust runtime environment for the execution of GA.
 
-\section{Event-driven Approach}
-\todo
+To configure the environment, the following parameters are required:
+~
+\begin{description}
+	\item[Population size]
+	The desired number of individuals in every generation of the mating pool. Since the number of individuals produced by genetic operators is not defined, the actual number of generated individuals may differ. In such cases, the value of this parameter serves as a lower bound to the actual value.
+
+	\item[Decision Trees]
+	The GA allows two decision trees to be specified. For reasons of clarity, these trees are labeled $\alpha$ and $\beta$. While the $\alpha$-tree is executed repeatedly at the beginning of every iteration of the GA, the $\beta$-tree is executed multiple times per iteration in order to populate the offspring generation.
+
+	\item[Evaluator]
+	The evaluator object is instantiated for the entire duration of the execution of the GA. It receives notifications about its state and requests to evaluate individuals in every iteration.
+	\todo % přidat notifikace o spuštění, vypnutí
+
+	\item[Termination condition]
+	At the end of every iteration, the termination object is called to determine whether the GA should continue execution or terminate. For more information about this object, see section \ref{section:termination-conditions}.
+
+	\item[Entropy generator]
+	This object provides sequences of pseudorandom numbers used for non-deterministic parts of the GA.
+\end{description}
+
+Once all dependencies are initialized, the GA is ready to commence execution. In this context, a single instance of execution is referred to as a \textit{run}. Runs are executed synchronously\footnote{Beware, the thread which calls the \texttt{run()} method is suspended until the execution finishes.} and are comprised of multiple iterations, depending on the termination condition. Each iteration consists of the following steps:
+~
+\begin{enumerate}
+	\item Ensure that all individuals in the current generation are evaluated.
+	\item Execute the $\alpha$-tree once.
+	\item Reset the offspring generation.
+	\item Execute the $\beta$-tree repeatedly until the offspring generation size is sufficient.
+	\item Replace the current generation with the offspring.
+\end{enumerate}
+
+\subsection{Termination Conditions}\label{section:termination-conditions}
+Termination objects are descendants of the class \texttt{TerminationCondition<T>}. Their instances encapsulate Boolean functions, which determine whether the GA should terminate its execution upon the end of every iteration.
+
+Objects provided by the library can be divided into two groups: the \textit{primitives} and the \textit{contractions}. The purpose of this division is to allow users to formulate complex termination conditions by combining primitives with the help of contractions. The supported primitives are:
+~
+\begin{description}
+	\item[Fitness threshold]
+	This condition terminates the execution of the GA once the best (or average) fitness in the population exceeds a set threshold. It is represented by the class \texttt{FitnessThreshold<T>}.
+
+	\item[Maximum number of generations]
+	This condition terminates the execution of the GA after a set number of iterations is performed. It is represented by the class \texttt{MaxNumberOfGenerations<T>}.
+
+	\item[Termination date]
+	This condition terminates the execution of the GA after a set date and time comes to pass. It is represented by the class \texttt{AfterDate<T>}.
+\end{description}
+
+Although every of the listed primitive objects can be used as a stand-alone termination condition, it is desirable to combine primitives using contractions. The library supports three basic contractions based on the fundamental logical operations. They are represented by classes \texttt{NotCondition<T>}, \texttt{AndCondition<T>} and \texttt{OrCondition<T>}. To simplify their usage, the library overloads common Swift Boolean operators \texttt{!}, \texttt{\&\&}, \texttt{||} in order to make them compatible with any descendants of \texttt{TerminationCondition<T>}. This is illustrated in Listing \ref{listing:termination-conditions}.
+
+\begin{listing}[ht]
+	\inputswift{termination-conditions}
+	\caption{Example definitions of termination conditions.}
+	\label{listing:termination-conditions}
+\end{listing}
+
+\subsection{Event Hooks}
+Although the execution of the GA is synchronous on the level of individual runs, the library allows its users to directly respond to certain important events for the purposes of monitoring and logging. This is achieved by the application of a simple event-driven model.
+
+Every event of interest declares a \textit{hook}. Hooks are optional function pointers, which can be set by the users to introduce custom logic into the evaluation scheme. By default, all hooks are unset when the GA is initialized. If the \texttt{DEBUG} macro is defined at the time of compilation, hooks are initialized with a function which prints a log message to the standard output. Hooks  for the following events of interest are supported:
+~
+\begin{description}
+	\item[Run started]
+	This event occurs after the \texttt{run()} method is called, but before the first population of random individuals is generated. It is represented by the field \texttt{hookRunStarted}.
+
+	\item[Run finished]
+	This event occurs after the termination condition stops the execution of the algorithm, just before the \texttt{run()} method returns. It is represented by the field \texttt{hookRunFinished}.
+
+	\item[Generation advanced]
+	This event occurs after every iteration of the GA. At this point, all individuals are evaluated and values such as the best or average fitness of the generation can be accessed. It is represented by the field \texttt{hookGenerationAdvanced}.
+\end{description}
 
 \section{Extensions}
 \todo
+
+\subsection{Elitism}
+
+\subsection{Entropy Generators}
+\todo
+
+\subsection{Persistence}
+\todo
+

@@ -116,10 +116,18 @@
 	"buffers":
 	[
 		{
-			"file": "tex/epilog.tex",
+			"file": "tex/thesis.tex",
 			"settings":
 			{
-				"buffer_size": 153,
+				"buffer_size": 6614,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "tex/preface.tex",
+			"settings":
+			{
+				"buffer_size": 220,
 				"line_ending": "Unix"
 			}
 		},
@@ -127,7 +135,7 @@
 			"file": "tex/chap01.tex",
 			"settings":
 			{
-				"buffer_size": 2187,
+				"buffer_size": 4004,
 				"line_ending": "Unix"
 			}
 		},
@@ -135,7 +143,7 @@
 			"file": "tex/chap02.tex",
 			"settings":
 			{
-				"buffer_size": 28417,
+				"buffer_size": 43975,
 				"line_ending": "Unix"
 			}
 		},
@@ -148,10 +156,10 @@
 			}
 		},
 		{
-			"file": "tex/preface.tex",
+			"file": "tex/epilog.tex",
 			"settings":
 			{
-				"buffer_size": 271,
+				"buffer_size": 151,
 				"line_ending": "Unix"
 			}
 		}
@@ -183,7 +191,13 @@
 	},
 	"console":
 	{
-		"height": 224.0
+		"height": 224.0,
+		"history":
+		[
+			"say_hello()",
+			"help",
+			"import urllib.request,os,hashlib; h = 'eb2297e1a458f27d836c04bb0cbaf282' + 'd0e7a3098092775ccb37ca9d6b2e4b7d'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
 	},
 	"distraction_free":
 	{
@@ -194,8 +208,16 @@
 		"side_bar_visible": false,
 		"status_bar_visible": false
 	},
+	"expanded_folders":
+	[
+		"/home/petrmanek/proj/bakalar"
+	],
 	"file_history":
 	[
+		"/home/petrmanek/proj/bakalar/code/termination-conditions.swift",
+		"/home/petrmanek/dld/Luminaries.pem",
+		"/home/petrmanek/proj/bakalar/bibliography.bib",
+		"/home/petrmanek/proj/bakalar/bibliography/GaPracticalHandbook.bib",
 		"/home/petrmanek/proj/bakalar/code/selection-encapsulation.swift",
 		"/home/petrmanek/proj/bakalar/code/custom-operator.swift",
 		"/home/petrmanek/proj/bakalar/code/pipeline-definition.swift",
@@ -319,11 +341,7 @@
 		"/home/petrmanek/proj/blog/_sass/_layout.scss",
 		"/home/petrmanek/proj/blog/_includes/header.html",
 		"/home/petrmanek/proj/blog/_posts/2015-07-02-welcome-to-jekyll.markdown",
-		"/home/petrmanek/proj/blog/_layouts/default.html",
-		"/home/petrmanek/proj/blog/README.md",
-		"/home/petrmanek/cvut/programovani/determinant.hs",
-		"/home/petrmanek/dbin/pbin",
-		"/home/petrmanek/cvut/databaze/semestralka/jooq_config.xml"
+		"/home/petrmanek/proj/blog/_layouts/default.html"
 	],
 	"find":
 	{
@@ -341,6 +359,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"pipeline",
+			"genetic algorithm",
+			"HEAD",
 			"dosimeter",
 			"processing software",
 			"jakubek",
@@ -465,10 +486,7 @@
 			"range",
 			"logarithmic",
 			"abstorel",
-			"0.001",
-			"colorScaleLabels",
-			"colorscale",
-			"minimumEnergy"
+			"0.001"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -500,24 +518,52 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 3,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "tex/epilog.tex",
+					"file": "tex/thesis.tex",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 153,
+						"buffer_size": 6614,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2073,
+								2073
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/LaTeXing/support/LaTeX.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 207.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "tex/preface.tex",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 220,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								220,
+								220
 							]
 						],
 						"settings":
@@ -532,20 +578,20 @@
 					"type": "text"
 				},
 				{
-					"buffer": 1,
+					"buffer": 2,
 					"file": "tex/chap01.tex",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2187,
+						"buffer_size": 4004,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								1615,
+								1615
 							]
 						],
 						"settings":
@@ -556,24 +602,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 3,
 					"file": "tex/chap02.tex",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 28417,
+						"buffer_size": 43975,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								28180,
-								28180
+								35870,
+								35870
 							]
 						],
 						"settings":
@@ -582,14 +628,14 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7285.0,
+						"translation.y": 10920.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 4,
 					"file": "tex/chap03.tex",
 					"semi_transient": false,
 					"settings":
@@ -613,24 +659,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "tex/preface.tex",
+					"buffer": 5,
+					"file": "tex/epilog.tex",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 271,
+						"buffer_size": 151,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								149,
+								149
 							]
 						],
 						"settings":
@@ -641,7 +687,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
 					"type": "text"
 				}
 			]
@@ -680,12 +726,13 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 28.0
+		"height": 151.0
 	},
 	"output.find_results":
 	{
 		"height": 0.0
 	},
+	"project": "thesis.sublime-project",
 	"replace":
 	{
 		"height": 48.0
@@ -711,10 +758,25 @@
 		],
 		"width": 380.0
 	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
 	"show_minimap": true,
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": false,
 	"side_bar_width": 184.0,
-	"status_bar_visible": true
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
 }

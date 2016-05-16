@@ -1,8 +1,82 @@
 \chapter{Usage Demonstration}
-\todo
+This chapter contains several demonstrations of the application of the library on practical problems with increasing difficulty. All of the presented examples are included in the library distribution package. To ensure that the mentioned results can be replicated, all instances of genetic algorithms use seeded entropy generators.
 
-\section{Trivial Examples}
-\todo
+\section{Trivial Example}
+The first example is a very trivial problem. It is defined as follows: \textit{Given all bit strings of length between 10 and 100 characters, find the string which maximizes the number of ones.} Although the optimal solution is clearly a string of 100 ones, the simplicity of the problem is ideally suited for demonstration of the individual components of the library.
+
+\subsection{Chromosome and Fitness}
+The domain space is a finite set. Its points can be characterized as range-initialized arrays of Boolean values with the initialization interval $[10;100]$, which is declared analogically to the array used in solving the Knapsack Problem (see Listing \ref{listing:array-knapsack}). Since range-initialized arrays already support basic genetic operators, they can be used as chromosomes in the GA.
+
+To evaluate and compare the quality of chromosomes, a fitness function is required. For the purposes of this simple example, the fitness function can be defined as
+~
+\begin{align}
+	f(s_1, s_2, \dots, s_{n}) = \frac{1}{100}\sum_{i=1}^{n} s_i
+\end{align}
+~
+where $\{s_i\}_{i=1}^{n}$ are the bits and $n\in[10;100]$ is the length of the chromosome. A simple implementation of a sequential evaluator using this function is shown in Listing \ref{listing:evaluator-sequential-maxone}.
+
+\begin{listing}[ht]
+	\inputswift{evaluator-sequential-maxone}
+	\caption{Example of a sequential evaluator for the MAX-ONE Problem.}
+	\label{listing:evaluator-sequential-maxone}
+\end{listing}
+
+\subsection{Algorithm}
+With both the chromosome data structure and the fitness function defined, the only remaining step is to declare and configure the instance of the GA before a run can be started. 
+
+\begin{listing}[ht]
+	\inputswift{algorithm-maxone}
+	\caption{Example of the GA definition for the MAX-ONE Problem.}
+	\label{listing:algorithm-maxone}
+\end{listing}
+
+To clearly explain the syntax of the \texttt{GeneticAlgorithm<T>} class initializer, the algorithm shown in Listing \ref{listing:algorithm-maxone} has the following properties:
+~
+\begin{itemize}
+	\item The number of individuals in every generation is 200.
+	\item Elitism is used to preserve the best chromosome.
+	\item The algorithm terminates after 1000 iterations or after the highest fitness value reaches 1.0.
+	\item The $\beta$-tree contains a single chance node:
+	~
+	\begin{itemize}
+		\item With the probability 0.5, apply the reproduction operator on a random individual.
+		\item With the probability 0.3, apply the mutation operator on an individual selected by the roulette selection.
+		\item With the probability 0.2, apply the one-point crossover operator on the winners of two randomized tournaments, each containing five contestants.
+	\end{itemize}
+\end{itemize}
+
+When executed, the presented algorithm performs 757~iterations before reaching the best fitness value~1.0 and yielding the optimal solution consisting of 100~ones. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took 5.6~seconds.
+
+To further increase its speed, it is possible to utilize parallelization of fitness evaluation (as described in Section \ref{section:parallel-evaluators}). By substituting the line no. 13 of Listing \ref{listing:algorithm-maxone} with \mintinline{swift}{ParallelEvaluator() { _ in MaxOneEvaluator() }}, the library creates a separate evaluator instance for every CPU core, instead of having only a single instance for all cores.
+
+After this modification, the number of performed iterations remains the same, however, the total execution decreases to 4.2~seconds. Note even though the experimental computer has 8 core CPU, such a small decrease in evaluation time is acceptable due to the fact that the only parallelized part of the algorithm is fitness evaluation, which in this particular case does not represent a significant portion of the processing time. The convergence of fitness values is plotted in Figure \ref{fig:maxone-fitness}.
+
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+			height=9cm,
+			width=0.9\textwidth,
+			grid=major,
+			xlabel={Generation},
+			ylabel={Fitness},
+			ymin=0, ymax=1,
+			xmin=1, xmax=757,
+			no markers,
+			legend pos=south east
+		]
+			
+		\addplot table {data/maxone-fitness-best.dat};
+		\addlegendentry{Best fitness}
+
+		\addplot table {data/maxone-fitness-average.dat};
+		\addlegendentry{Average fitness}
+
+		\end{axis}
+	\end{tikzpicture}
+	\caption[MAX-ONE genetic algorithm fitness convergence chart.]{Fitness convergence chart of the GA from Listing \ref{listing:algorithm-maxone}.}
+	\label{fig:maxone-fitness}
+\end{figure}
 
 \section{Self-driving Car Simulation}
 \todo

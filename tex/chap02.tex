@@ -32,9 +32,9 @@ A simple usage of range-initialized arrays can be demonstrated on finding soluti
 	\label{listing:array-knapsack}
 \end{listing}
 
-In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift type extensions, every instance of range-initialized array automatically conforms to the \texttt{ChromosomeType} protocol and supports three basic genetic operators (for definition, see section \ref{section:genetic-operators}). Range-initialized arrays can thus be directly used as chromosomes in the GA without any further modification.
+In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift type extensions, every instance of range-initialized array automatically conforms to the \texttt{ChromosomeType} protocol and supports three basic genetic operators (for definition, see Section \ref{section:genetic-operators}). Range-initialized arrays can thus be directly used as chromosomes in the GA without any further modification.
 
-It is worth noting at this point that strings are \textbf{not designed to hold heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as bits, it can be encoded as a binary string, portions of which would be later interpretted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application. While this approach succeeds in its purpose, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item of the array, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
+It is worth noting at this point that strings are \textbf{not designed to hold heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as bits, it can be encoded as a binary string, portions of which would be later interpreted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application. While this approach succeeds in its purpose, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item of the array, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see Section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
 
 \subsection{Trees}
 Tree structures are commonly used in applications, which require automatic code generation. In such applications, individuals often carry chromosomes which contain control programs, mathematical formulas or similar information that can be represented by tree graphs. The library allows to represent such type of data by a collection of \textit{tree nodes}.
@@ -69,7 +69,7 @@ Both types of nodes are intentionally left abstract, guiding users to define the
 	      child { node {\texttt{GoCommandNode}}}
 	      child { node {\texttt{WaitCommandNode}} } };
 	\end{tikzpicture}
-	\caption{Example program for the maze robot simulation, which makes the robot go forward until it encounters an obstacle.}
+	\caption[Example program for the maze robot simulation.]{Example program for the maze robot simulation, which makes the robot go forward until it encounters an obstacle.}
 	\label{figure:example-program}
 \end{figure}
 
@@ -104,7 +104,7 @@ It is recommended that tree factories are instantiated in the global context, or
 \subsection{Custom Types}\label{section:custom-types}
 If the chromosome information is not compatible with strings or trees, or is heterogeneous in its nature, it is recommended that a custom data type is declared to hold it. This allows users to label, document and describe individual parts of the chromosome, as well as to customize its behavior at important points of evaluation.
 
-Any reference type can become a chromosome data structure, if it conforms to the \texttt{ChromosomeType} protocol (and its inherited protocols). No other protocol conformance is formally required. Nevertheless, it is worth noting that some genetic operators may require chromosomes to conform to other proprietary protocols, in order to operate on them. For instance, the \texttt{Mutable} protocol, which is required by the \texttt{Mutation} operator. For description of such protocols, see section \ref{section:genetic-operators}.
+Any reference type can become a chromosome data structure, if it conforms to the \texttt{ChromosomeType} protocol (and its inherited protocols). No other protocol conformance is formally required. Nevertheless, it is worth noting that some genetic operators may require chromosomes to conform to other proprietary protocols, in order to operate on them. For instance, the \texttt{Mutable} protocol, which is required by the \texttt{Mutation} operator. For description of such protocols, see Section \ref{section:genetic-operators}.
 
 Declaration of custom types can be demonstrated on The Hamburger Restaurant Problem, mentioned in the introduction\footnote{For the purposes of this work, the example has been slightly altered.} of \cite{Koza1992}. The objective is to find a business strategy for a chain of hamburger restaurants, which yields the biggest profit. A strategy consists of three decisions:
 ~
@@ -119,7 +119,7 @@ Declaration of custom types can be demonstrated on The Hamburger Restaurant Prob
 	Should the restaurant provide slow, leisurely service by waiters in tuxedos or fast, snappy service by waiters in white polyester uniforms?
 \end{description}
 
-Clearly, every strategy is a heterogeneous data structure. Although it could be encoded into a binary string as proposed in section \ref{section:strings}, it is much safer and more elegant to declare a dedicated type to hold its information. Such declaration is shown in Listing \ref{listing:hamburger-sample}.
+Clearly, every strategy is a heterogeneous data structure. Although it could be encoded into a binary string as proposed in Section \ref{section:strings}, it is much safer and more elegant to declare a dedicated type to hold its information. Such declaration is shown in Listing \ref{listing:hamburger-sample}.
 
 \begin{listing}[ht]
 	\inputswift{hamburger-sample}
@@ -149,10 +149,10 @@ In the context of population evaluation, a \textit{mating pool} represents a col
 
 Apart from chromosomes, individuals in the mating pool also have an optional field dedicated for their fitness value. When a new individual is inserted into the population, value of this field is not present. However, individuals transitioning between generations carry their previously set fitness with them. In a single iteration of the GA, the fundamental purpose of an evaluator object is to ensure that all individuals in the current generation have a non-null fitness value.
 
-\subsection{Sequential and Parallel Evaluators}
+\subsection{Sequential and Parallel Evaluators}\label{section:parallel-evaluators}
 The library supports two evaluation modes: \textit{sequential} and \textit{parallel}. While the sequential mode is easier to implement but leads to slower evaluation, the parallel mode is faster but requires the internals of the fitness function to be compatible with multi-threaded processing, which may not always be feasible with respect to the problem definition.
 
-To demonstrate implementation of a simple sequential evaluator, recall the chromosome structure, which was proposed earlier\footnote{The Knapsack Problem is defined in section \ref{section:strings}. For chromosome structure, see Listing \ref{listing:array-knapsack}} for the Knapsack Problem. Suppose the fitness function is defined as
+To demonstrate implementation of a simple sequential evaluator, recall the chromosome structure, which was proposed earlier\footnote{The Knapsack Problem is defined in Section \ref{section:strings}. For chromosome structure, see Listing \ref{listing:array-knapsack}} for the Knapsack Problem. Suppose the fitness function is defined as
 ~
 \begin{align}
 	f(c_1, c_2, \dots, c_{10})
@@ -183,25 +183,21 @@ Usage of cyclic evaluators is straightforward. At the instantiation time, a cycl
 \section{Genetic Operators}\label{section:genetic-operators}
 Genetic operators are procedures, which are performed on collections of individuals during the evaluation of the GA in order to transition between iterations. When operators are applied, the entire mating pool is available to them. While the current generation can be merely accessed for reading, the offspring generation also supports writing. Every operator can thus read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome into the offspring generation.
 
-The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters of individual operators. There are various types of selections, each providing the selection pressure in a different way, thus being suitable for different classes of applications. For the description of supported selection methods, see section \ref{section:selection}.
+The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters of individual operators. There are various types of selections, each providing the selection pressure in a different way, thus being suitable for different classes of applications. For the description of supported selection methods, see Section \ref{section:selection}.
 
 The library offers implementation of three common genetic operators: \textit{reproduction}, \textit{mutation} and \textit{crossover}. However, users are by no means limited to only these three. This section shows the usage of the preimplemented operators and gives details and recommendations on creating custom ones.
 
 \subsection{Reproduction}\label{section:reproduction}
 The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. Unlike others, this operator does not introduce any novelty into the offspring generation. Instead, its purpose is to simply stabilize the population by carrying certain traits between generations. This in effect prevents the loss of diversity and thereby avoids premature convergence of the GA, which may lead to a suboptimal solution.
 
-When applied on the population, the reproduction operator copies arbitrary number of selected chromosomes from the current generation to the next one without any modifications. Since the selection of individuals is independent of the operator implementation, it is technically possible to use any selection object with this operator. Nevertheless, it is worth noting that only fitness-proportionate strategies make sense in this context.
-
-\todo % Reproducible do appky
+When applied on the population, the reproduction operator copies arbitrary number of selected chromosomes from the current generation to the next one without any modifications. Since the selection of individuals is independent of the operator implementation, it is technically possible to use any selection object with this operator. Nevertheless, it is worth noting that only fitness-proportionate strategies make sense in this context. A good example of such strategies is \textit{elitism}, which is more thoroughly described in Section \ref{section:elitism}.
 
 Since individuals are immutable by definition, the reproduction operator requires their underlying chromosome data structures to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of their instances.
 
 \subsection{Mutation}\label{section:mutation}
 The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it operates by copying selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The degree of mutation in the chromosomes is static and determined by the implementation. In general, mutated chromosomes can be expected to mostly resemble their original counterparts, yet not be completely identical.
 
-In order to be used in the GA, the mutation operator requires chromosome data structures to conform to the \texttt{Mutable} protocol. Every container can thus have its own, slightly different implementation of mutation, which should be defined in its documentation. As an example, this section describes the implementation for containers, which are distributed with the library.
-
-General guidelines for implementing mutation are:
+In order to be used in the GA, the mutation operator requires chromosome data structures to conform to the \texttt{Mutable} protocol. Every container can thus have its own, slightly different implementation of mutation, which should be defined in its documentation. General guidelines for implementing mutation are:
 ~
 \begin{enumerate}
 	\item Select one chromosome in the current generation.
@@ -210,21 +206,20 @@ General guidelines for implementing mutation are:
 	\item Insert the modified chromosome into the offspring generation.
 \end{enumerate}
 
-Clearly, among various data structures the semantical definition of a ``part'' may differ. For instance, in arrays and range-initialized arrays, a part is defined as an item of the array. Since arrays are homogeneous, all their are equivalent by definition. In contrast, a part of a tree node structure is defined as a rooted subtree. Two subtrees are equivalent if the fundamental base classes of their root nodes match.
+Clearly, among various data structures the semantical definition of a ``part'' may differ. For instance, in range-initialized arrays, a part is defined as an item of the array. Since arrays are homogeneous, all their are equivalent by definition. In contrast, a part of a tree node structure is defined as a rooted subtree. Two subtrees are equivalent if the fundamental base classes of their root nodes match.
 
 \subsection{Crossover}\label{section:crossover}
-The crossover operator emulates the act of sexual reproduction of individuals in the nature (also known as \textit{recombination}). Unlike the previous two operators, it requires the input of exactly two chromosomes from the current generation, which are referred to as \textit{the parent chromosomes}. During the execution of the operator, equivalent parts of the parent chromosomes are randomly chosen and exchanged, producing two new chromosomes, which are inserted into the offspring generation. These chromosomes carry a mixture of traits of the parent chromosomes, and can therefore be thought of as their \textit{children}.
+The crossover operator emulates the act of sexual reproduction of individuals in the nature (also known as \textit{recombination}). Unlike the previous two operators, it requires the input of exactly two chromosomes from the current generation, which are referred to as \textit{the parent chromosomes}. During the execution of the operator, parts of the parent chromosomes are randomly chosen and exchanged, producing two new chromosomes, which are inserted into the offspring generation. These chromosomes carry a mixture of traits of the parent chromosomes, and can therefore be thought of as their \textit{children}.
 
 Similarly to the mutation operator, in order for the crossover to be used with chromosomes, their underlying data structure must conform to a dedicated Swift protocol, which allows users to customize the behavior of the operator with respect to the architecture of the data structure. The general guidelines for implementing such customizations are:
 ~
 \begin{enumerate}
 	\item Select two distinct chromosomes in the current generation.
-	\item Choose pairs of ``equivalent parts'' of the chromosomes at random.
+	\item Choose pairs of ``parts'' of the chromosomes at random.
 	\item Copy both chromosomes, swapping the parts in each pair.
 	\item Insert the modified chromosomes into the offspring generation.
 \end{enumerate}
 
-\todo % implementovat 2-point crossover
 Depending on the number and size of interchanged parts, multiple classes of crossover operators\footnote{Each crossover operator has a dedicated Swift protocol.} can be defined. For arrays and range-initialized arrays, two crossovers are implemented:
 ~
 \begin{description}
@@ -243,8 +238,6 @@ For tree node structures, crossover is implemented by selecting two random subtr
 By creating descendants of the generic abstract class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any genetic operators of their own. This section gives details and recommendations on implementing such subclasses.
 
 The base class contains a selection object and an initializer method, which is used to configure the selection at the time of creation. This initializer must be called from any descendants as it is crucial to operator execution later on. The internal logic of the operator is controlled by the abstract method \texttt{apply()}, which receives a mating pool and an entropy generator object. In this method, the operator is expected to call the selection object exactly once and provide it with both mentioned objects as well as the number of individuals needed for its execution. The selection then returns a list of the selected indices, which can be used to access the objects of individuals containing chromosome data and fitness evaluations. To further illustrate this approach, an example of a custom operator implementation is shown in Listing \ref{listing:custom-operator}.
-
-\todo % revidováno až sem
 
 \begin{listing}[ht]
 	\inputswift{custom-operator}
@@ -273,7 +266,7 @@ Decision trees are used to describe the sequential application of operators in t
 	Chance nodes contain non-deterministic switches between multiple choices. Every choice specifies its probability and a decision subtree to execute, should it be selected.
 \end{description}
 
-To ease their usage, decision trees are defined by custom Swift operators. In order to concatenate tree nodes in a sequence, the three-dash arrow operator (e.g. \texttt{--->}) is used. Sequences produced by this operator resemble linked lists in their structure. The three-bar operator (e.g. \texttt{|||}) serves to determine choices in chance nodes. The syntax of both operators can be seen in Listing \ref{listing:pipeline-definition}.
+To ease their usage, decision trees are defined by custom Swift operators. In order to concatenate tree nodes in a sequence, the three-dash arrow operator (e.g. \texttt{--->}) is used. Sequences produced by this operator resemble linked lists in their structure. The three-bar operator (e.g. \texttt{|||}) serves to determine choices in chance nodes. The syntax of both operators is illustrated by Listing \ref{listing:pipeline-definition}.
 
 \begin{listing}[ht]
 	\inputswift{pipeline-definition}
@@ -285,7 +278,7 @@ To ease their usage, decision trees are defined by custom Swift operators. In or
 \section{Selections}\label{section:selection}
 The purpose of selection objects is to separate the methods of chromosome selection from the genetic operators. This approach allows users to easily combine operators with selection methods without the need for unnecessary subclassing.
 
-As input, selection objects receive three parameters from their genetic operators: the current generation (together with fitness evaluations), an entropy generator and the number of requested chromosomes. In return, selection objects are expected to produce a list of indices of the selected chromosomes or fail with error should the population contain insufficient number of chromsomes. When accessing fitness evaluations, the library uses lazy-loading optimizations, in order to prevent unnecessary sorting and data aggregation. For that reason, selection objects are not required to specify fitness-related dependencies. Instead, additional caluclations are performed on the first instance when the information is required.
+As input, selection objects receive three parameters from their genetic operators: the current generation (together with fitness evaluations), an entropy generator and the number of requested chromosomes. In return, selection objects are expected to produce a list of indices of the selected chromosomes or fail with error should the population contain insufficient number of chromosomes. When accessing fitness evaluations, the library uses lazy-loading optimizations, in order to prevent unnecessary sorting and data aggregation. For that reason, selection objects are not required to specify fitness-related dependencies. Instead, additional calculations are performed on the first instance when the information is required.
 
 Similarly to genetic operators, the library offers the implementation of common selections and allows its users to customize their behavior, possibly creating their own subclasses. Such techniques are described at the end of this section.
 
@@ -354,10 +347,10 @@ To configure the environment, the following parameters are required:
 	\todo % přidat notifikace o spuštění, vypnutí
 
 	\item[Termination condition]
-	At the end of every iteration, the termination object is called to determine whether the GA should continue execution or terminate. For more information about this object, see section \ref{section:termination-conditions}.
+	At the end of every iteration, the termination object is called to determine whether the GA should continue execution or terminate. For more information about this object, see Section \ref{section:termination-conditions}.
 
 	\item[Entropy generator]
-	This object provides sequences of pseudorandom numbers used for non-deterministic parts of the GA.
+	This object provides sequences of pseudorandom numbers used for non-deterministic parts of the GA. For more information about this object, see Section \ref{section:entropy-generators}.
 \end{description}
 
 Once all dependencies are initialized, the GA is ready to commence execution. In this context, a single instance of execution is referred to as a \textit{run}. Runs are executed synchronously\footnote{Beware, the thread which calls the \texttt{run()} method is suspended until the execution finishes.} and are comprised of multiple iterations, depending on the termination condition. Each iteration consists of the following steps:
@@ -397,7 +390,7 @@ Although every of the listed primitive objects can be used as a stand-alone term
 \subsection{Event Hooks}
 Although the execution of the GA is synchronous on the level of individual runs, the library allows its users to directly respond to certain important events for the purposes of monitoring and logging. This is achieved by the application of a simple event-driven model.
 
-Every event of interest declares a \textit{hook}. Hooks are optional function pointers, which can be set by the users to introduce custom logic into the evaluation scheme. By default, all hooks are unset when the GA is initialized. If the \texttt{DEBUG} macro is defined at the time of compilation, hooks are initialized with a function which prints a log message to the standard output. Hooks  for the following events of interest are supported:
+Every event of interest declares a \textit{hook}. Hooks are optional function pointers, which can be set by the users to introduce custom logic into the evaluation scheme. By default, all hooks are unset when the GA is initialized. If the \texttt{DEBUG} macro is defined at the time of compilation, hooks are initialized with functions which print log messages to the standard output. Hooks for the following events are supported:
 ~
 \begin{description}
 	\item[Run started]
@@ -411,13 +404,24 @@ Every event of interest declares a \textit{hook}. Hooks are optional function po
 \end{description}
 
 \section{Extensions}
-\todo
+In this section, several important extension functions of the library are described. These extensions are useful in practical applications as they mainly serve auxiliary purposes, easing the operation of the code, which interacts with the library and its components.
 
-\subsection{Elitism}
+\subsection{Elitism}\label{section:elitism}
+In practical applications, it is desirable to ensure that the quality of the solutions produced by the GA does not decrease over consecutive iterations. If the quality is defined as the highest fitness value of the individuals in the current generation, such effect can be simply achieved by copying the fittest individual from the current generation to the offspring generation before transitioning to the next iteration of the GA. This approach is known as \textit{elitism}.
 
-\subsection{Entropy Generators}
-\todo
+The library provides a dedicated implementation of elitism represented by the class \texttt{Elitism<T>}, which is a simple restriction of the reproduction operator to the best individuals of the generation. For the best results, it is recommended that the class is directly referenced in the $\alpha$-tree of a genetic algorithm instance.
 
-\subsection{Persistence}
-\todo
+\subsection{Persistence}\label{section:persistence}
+To allow continued operation of the GA, the library supports serialization and deserialization of object values. This consequently allows users to persist the state of the GA, terminate their application and restart its execution later on at the same point. Data is serialized into the JavaScript Object Notation format (JSON), which is abstracted by the \texttt{SwiftyJSON} framework, one of the dependencies of the library.
+
+In the code, every type that supports persistence is declared to conform to the \texttt{PersistentType} protocol, which requires it to provide additional encoding and decoding procedures. For user convenience, the majority of types provided by the library already conforms to this protocol. Only those types which are dependent on user subclassing often offer two protocols (or base classes), so that users can ultimately decide whether to support object persistence in accordance with their needs.
+
+A good example of this division can be found in range-initialized arrays. In addition to the protocol \texttt{RangeInitializedArray<T>}, a persistent protocol \texttt{PersistentRangeInitializedArray<T>} is declared. The first protocol is a parent object to the latter. The only difference is that in the persistent version, type \texttt{T} is required to conform to \texttt{PersistentType}. In return, the entire persistent version of the range-initialized array also conforms to \texttt{PersistentType}, delegating serialization calls to its elements.
+
+\subsection{Entropy Generators}\label{section:entropy-generators}
+Entropy generators are objects used to introduce non-deterministic behavior into the GA. In their essence, they represent a generalization of the conventional pseudo-random number generators (PRNG), extending the range of types produced beyond decimal numbers.
+
+All entropy generators provided by the library conform to the protocol \texttt{EntropyGenerator}, which requires types to be capable of generating pseudo-random floating-point decimals in the $[0;1]$ interval. Any type can be randomly generated in a similar way, provided that it conforms to the \texttt{Randomizable} protocol. The library provides such extensions for many Swift primitive types including \texttt{Int}, \texttt{Double}, \texttt{Float}, \texttt{Bool} and enumerations, which can opt into this mechanism by conforming to the \texttt{Discrete} protocol as shown in Listing \ref{listing:discrete-sample}.
+
+The library offers abstractions of random generation mechanisms provided by the standard library, most notably the \texttt{arc4random()} function (represented by \texttt{ArcGenerator}) and the \texttt{drand48()} function (represented by \texttt{DrandGenerator}). In addition, a custom implementation of the Mersenne Twister PRNG was translated from an existing Python implementation (represented by \texttt{MersenneTwister}).
 

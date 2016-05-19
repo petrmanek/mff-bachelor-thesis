@@ -2,105 +2,189 @@
 This chapter is dedicated to establishing and describing terms needed to understand the rest of the work.
 
 \section{Genetic Algorithms}
-Genetic algorithms (GA) are iterative randomized optimization techniques, which are inspired by the process of natural selection. In the context of GA, points in the domain space are likened to \textit{individuals} of a biological species. Every individual carries a \textit{chromosome}, which describes its location in the domain space, thus defining its properties and capabilities.
+Genetic algorithms (GA) are iterative randomized optimization methods, which are inspired by the biological process of natural selection. In the context of GA, points in the domain space are likened to \textit{individuals} of animal species. Every individual carries a \textit{chromosome}, which describes its location in the domain space, thus defining its properties similarly to the way DNA defines skills and capabilities of its carriers.
 
-To initialize the GA, a \textit{population} of individuals with random chromosomes is generated. During single iteration of the GA, individuals in the population compete for their right to reproduce, favoring those who maximize the value of a \textit{fitness function} which customarily maps every individual to a value from the $[0;1]$ interval. At the end of the iteration, fit individuals are selected and allowed to produce an \textit{offspring population}, on which the next iteration of the GA operates.
+To initialize the GA, a \textit{population} of individuals with random chromosomes is generated. During single iteration of the GA, individuals in the population compete for their right to reproduce, favoring those who maximize the value of a \textit{fitness function} which customarily maps every individual to a single decimal value from the $[0;1]$ interval. At the end of the iteration, fit individuals are selected and allowed to produce an \textit{offspring population}, on which the next iteration of the GA operates. This behavior creates an iterative loop, which can be summarized by a diagram shown in Figure \ref{fig:genetic-flowchart}.
 
-\textit{The selection pressure} is the degree to which the better individuals are favored: the higher the selection pressure, the more the better individuals are favored. This selection pressure drives the GA to improve the population fitness over succeeding generations. However, if the selection pressure is too low, the convergence rate will be slow, and the GA will unnecessarily take longer to find the optimal solution. If the selection pressure is too high, there is an increased chance of the genetic algorithm prematurely converging to an incorrect (suboptimal) solution. \cite{GaTournamentSelection}
+\begin{figure}[ht]
+	\centering
+	\scriptsize
+	\begin{tikzpicture}[
+		node distance = 1.5cm, 
+		auto,
+		decision/.style={
+			diamond, 
+			draw, 
+    		text width=5em, 
+    		text badly centered, 
+    		node distance=2cm, 
+    		inner sep=0pt
+    		},
+		block/.style={
+			rectangle, 
+			draw, 
+			text width=6.5em, 
+			text centered, 
+			minimum height=4em
+			},
+		line/.style={
+			draw,
+			-latex'
+			}]
+	    % Place nodes
+	    \node [block] (init) {Generate random population.};
+	    \node [block, below of=init] (evaluate2) {Evaluate\\population.};
+	    \node [decision, below of=evaluate2] (termination) {Should terminate?};
+	    \node [block, below of=termination, node distance=2cm] (reset) {Reset\\offspring.};
+	    \node [block, right of=termination, node distance=3cm] (stop) {Terminate.};
+	    \node [decision, below of=reset] (enough) {Have enough offpring?};
+
+	    \node [block, below of=enough, node distance=2.3cm] (operator) {Choose genetic operator.};
+	    \node [block, left of=enough, node distance=3cm] (evaluate) {Evaluate\\offspring.};
+	    \node [block, above of=evaluate, node distance=2cm] (swap) {Swap\\generations.};
+	    \node [block, right of=operator, node distance=3cm] (insert) {Insert\\offspring\\ individual.};
+
+	    % Draw edges
+	    \path [line] (init) -- (evaluate2);
+	    \path [line] (evaluate2) -- (termination);
+	    \path [line] (termination) -- node {no}(reset);
+	    \path [line] (reset) -- (enough);
+	    \path [line] (enough) -- node {no}(operator);
+	    \path [line] (enough) -- node {yes}(evaluate);
+	    \path [line] (evaluate) -- (swap);
+	    \path [line] (swap) |- (termination);
+	    \path [line] (termination) -- node {yes}(stop);
+	    \path [line] (operator) -- (insert);
+	    \path [line] (insert) |- (enough);
+	\end{tikzpicture}
+
+	\caption{Generalized decision diagram of a GA.}
+	\label{fig:genetic-flowchart}
+\end{figure}
+
+Although there are many variants of GA, each with different properties and applications, the basic notion stays the same. Genetic algorithms iteratively evaluate and modify a population of chromosomes until a set \textit{termination condition} met. This condition can for instance ascertain the fitness of the best chromosome so far or simply count the number of iterations performed. Individuals are inserted in the population at two instances throughout the execution of the GA: first during the initialization when a random population is generated, and second when the population is modified to prepare grounds for the next iteration. The latter of the two is the key phase of the GA. At this point in execution, the algorithm explores new points of the domain space by reusing points which have already been discovered. Such process is often based on non-deterministic inputs and can utilize the fitness of the chromosomes discovered so far as a heuristic. Instances of this process are referred to as \textit{genetic operators}.
+
+The \textit{selection pressure} is the degree to which the better individuals are favored: the higher the selection pressure, the more the better individuals are favored. This selection pressure drives the GA to improve the population fitness over succeeding generations. However, if the selection pressure is too low, the convergence rate will be slow, and the GA will unnecessarily take longer to find the optimal solution. If the selection pressure is too high, there is an increased chance of the genetic algorithm prematurely converging to an incorrect (suboptimal) solution. \cite{GaTournamentSelection}
 
 \section{Neural Networks}\label{section:neural-networks}
-\todo
+A neural network is an interconnected assembly of simple processing elements, \textit{units} or \textit{nodes}, whose functionality is loosely based on the animal neuron. The processing ability of the network is stored in the interunit connection strengths, or \textit{weights}, obtained by a process of adaptation to, or \textit{learning} from a set of training patterns. \cite{NeuralNets}
 
+A neural network is called \textit{feedforward} (denoted FFNN), if its interunit connections do not form a cycle. In such case, it makes sense to clasify its nodes in separate \textit{layers} with respect to their topological ordering. The first layer of the network is customarily called the \textit{input layer}, whereas the last layer is called the \textit{output layer}. The remaining layers are referred to as the \textit{hidden layers}. This is illustrated in Figure \ref{fig:FFNN}.
 
-\begin{tikzpicture}[
-plain/.style={
-  draw=none,
-  fill=none,
-  },
-net/.style={
-  matrix of nodes,
-  nodes={
-    draw,
-    circle,
-    inner sep=10pt
-    },
-  nodes in empty cells,
-  column sep=2cm,
-  row sep=-9pt
-  },
->=latex
-]
-\matrix[net] (mat)
-{
-|[plain]| \parbox{1.3cm}{\centering Input\\layer} & |[plain]| \parbox{1.3cm}{\centering Hidden\\layer} & |[plain]| \parbox{1.3cm}{\centering Output\\layer} \\
-& |[plain]| \\
-|[plain]| & \\
-& |[plain]| \\
-|[plain]| & |[plain]| \\
-& & \\
-|[plain]| & |[plain]| \\
-& |[plain]| \\
-|[plain]| & \\
-& |[plain]| \\
-};
-\foreach \ai [count=\mi ]in {2,4,...,10}
-  \draw[<-] (mat-\ai-1) -- node[above] {Input \mi} +(-2cm,0);
-\foreach \ai in {2,4,...,10}
-{\foreach \aii in {3,6,9}
-  \draw[->] (mat-\ai-1) -- (mat-\aii-2);
-}
-\foreach \ai in {3,6,9}
-  \draw[->] (mat-\ai-2) -- (mat-6-3);
-\draw[->] (mat-6-3) -- node[above] {Ouput} +(2cm,0);
-\end{tikzpicture}
+\begin{figure}[ht]
+	\centering
+	\scriptsize
+	\begin{tikzpicture}[
+		plain/.style={
+		  draw=none,
+		  fill=none,
+		  },
+		net/.style={
+		  matrix of nodes,
+		  nodes={
+		    draw,
+		    circle,
+		    inner sep=7pt
+		    },
+		  nodes in empty cells,
+		  column sep=1cm,
+		  row sep=-9pt
+		  },
+		>=latex
+		]
+		\matrix[net] (mat)
+		{
+		|[plain]| \parbox{1.3cm}{\centering Input\\layer} & |[plain]| \parbox{1.3cm}{\centering Hidden\\layer} & |[plain]| \parbox{1.3cm}{\centering Output\\layer} \\
+		& |[plain]| \\
+		|[plain]| & \\
+		& |[plain]| \\
+		|[plain]| & |[plain]| \\
+		& & \\
+		|[plain]| & |[plain]| \\
+		& |[plain]| \\
+		|[plain]| & \\
+		& |[plain]| \\
+		};
+		\foreach \ai [count=\mi ]in {2,4,...,10}
+		  \draw[<-] (mat-\ai-1) -- node[above] {Input \mi} +(-2cm,0);
+		\foreach \ai in {2,4,...,10}
+		{\foreach \aii in {3,6,9}
+		  \draw[->] (mat-\ai-1) -- (mat-\aii-2);
+		}
+		\foreach \ai in {3,6,9}
+		  \draw[->] (mat-\ai-2) -- (mat-6-3);
+		\draw[->] (mat-6-3) -- node[above] {Output} +(2cm,0);
+	\end{tikzpicture}
+	\caption[A feedforward neural network.]{A feedforward neural network comprised of three layers of nodes.}
+	\label{fig:FFNN}
+\end{figure}
 
-\begin{tikzpicture}[
-init/.style={
-  draw,
-  circle,
-  inner sep=2pt,
-  font=\Huge,
-  join = by -latex
-},
-squa/.style={
-  draw,
-  inner sep=2pt,
-  font=\Large,
-  join = by -latex
-},
-start chain=2,node distance=13mm
-]
-\node[on chain=2] 
-  (x2) {$x_2$};
-\node[on chain=2,join=by o-latex] 
-  {$w_2$};
-\node[on chain=2,init] (sigma) 
-  {$\displaystyle\Sigma$};
-\node[on chain=2,squa,label=above:{\parbox{2cm}{\centering Activate \\ function}}]   
-  {$f$};
-\node[on chain=2,label=above:Output,join=by -latex] 
-  {$y$};
-\begin{scope}[start chain=1]
-\node[on chain=1] at (0,1.5cm) 
-  (x1) {$x_1$};
-\node[on chain=1,join=by o-latex] 
-  (w1) {$w_1$};
-\end{scope}
-\begin{scope}[start chain=3]
-\node[on chain=3] at (0,-1.5cm) 
-  (x3) {$x_3$};
-\node[on chain=3,label=below:Weights,join=by o-latex] 
-  (w3) {$w_3$};
-\end{scope}
-\node[label=above:\parbox{2cm}{\centering Bias \\ $b$}] at (sigma|-w1) (b) {};
+\subsection{Mathematical Representation}
+In feedforward neural networks, signals travel between connected nodes in a way resembling the action potential of biological neural systems. At first, nodes of the input layer are evaluated with real numbers. From these values, nodes of the second layer calculate their outputs. Then, nodes of the third layer calculate their outputs based on the outputs of the second layer, and so on. This process propagates through the rest of the network until the output layer is reached. Since there are no cycles in the interunit connections of the FFNN, a finite number of steps is required to achieve such state. The outputs of the nodes located in the output layer are considered to be the outputs of the neural network. By this description, it is possible to think of the FFNN as a real vector function from $m$-dimensional to $n$-dimensional space, where $m,n$ denote the number of nodes in the input and the output layer respectively.
 
-\draw[-latex] (w1) -- (sigma);
-\draw[-latex] (w3) -- (sigma);
-\draw[o-latex] (b) -- (sigma);
+The process of calculating the output of a single node with respect to its inputs (which are in fact the outputs of the nodes of the previous layer) is quite straightforward. The output is defined as
+~
+\begin{align}
+	y = f\left(b+\sum_{i=1}^n w_i x_i\right)
+\end{align}
+~
+where $\{x_i\}_{i=1}^n$ denote the input values, $\{w_i\}_{i=1}^n$ denote the interunit connection weights, $b$ denotes the \textit{bias parameter} of the node and $f$ denotes the \textit{activation function}. The combination of all these parameters is illustrated in Figure \ref{fig:neuron-combination}.
 
-\draw[decorate,decoration={brace,mirror}] (x1.north west) -- node[left=10pt] {Inputs} (x3.south west);
-\end{tikzpicture}
+\begin{figure}[ht]
+	\centering
+	\scriptsize
+	\begin{tikzpicture}[
+		init/.style={
+		  draw,
+		  circle,
+		  inner sep=2pt,
+		  font=\Huge,
+		  join = by -latex
+		},
+		squa/.style={
+		  draw,
+		  inner sep=2pt,
+		  font=\Large,
+		  join = by -latex
+		},
+		start chain=2,node distance=13mm
+		]
+		\node[on chain=2] 
+		  (x2) {$x_2$};
+		\node[on chain=2,join=by o-latex] 
+		  {$w_2$};
+		\node[on chain=2,init] (sigma) 
+		  {$\displaystyle\Sigma$};
+		\node[on chain=2,squa,label=above:{\parbox{2cm}{\centering Activation \\ function}}]   
+		  {$f$};
+		\node[on chain=2,label=above:Output,join=by -latex] 
+		  {$y$};
+		\begin{scope}[start chain=1]
+		\node[on chain=1] at (0,1cm) 
+		  (x1) {$x_1$};
+		\node[on chain=1,join=by o-latex] 
+		  (w1) {$w_1$};
+		\end{scope}
+		\begin{scope}[start chain=3]
+		\node[on chain=3] at (0,-1cm) 
+		  (x3) {$x_3$};
+		\node[on chain=3,label=below:Weights,join=by o-latex] 
+		  (w3) {$w_3$};
+		\end{scope}
+		\node[label=above:\parbox{2cm}{\centering Bias \\ $b$}] at (sigma|-w1) (b) {};
 
+		\draw[-latex] (w1) -- (sigma);
+		\draw[-latex] (w3) -- (sigma);
+		\draw[o-latex] (b) -- (sigma);
+
+		\draw[decorate,decoration={brace,mirror}] (x1.north west) -- node[left=10pt] {Inputs} (x3.south west);
+	\end{tikzpicture}
+
+	\caption[A diagram of FFNN node evaluation.]{A diagram of FFNN node evaluation with three inputs.}
+	\label{fig:neuron-combination}
+\end{figure}
+
+It is worth noting at this point that a constant number of weights can be achieved by assigning non-existant interunit connections zero weights. For the purposes of implementation, it is also possible to approximate the effects of the bias parameter by creating one additional node in every layer and configuring it to produce constant output. The bias of every node in the layer is then simply encoded into connection weights of such node.
 
 \section{Redistributable Applications}
 \todo

@@ -45,11 +45,11 @@ To clearly explain the syntax of the \texttt{GeneticAlgorithm<T>} class initiali
 	\end{itemize}
 \end{itemize}
 
-When executed, the presented algorithm performs 757~iterations before reaching the best fitness value~1.0 and yielding the optimal solution consisting of 100~ones. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took 5.6~seconds.
+When executed, the presented algorithm performs 757~iterations before reaching the best fitness value~1.0 and yielding the optimal solution consisting of 100~ones. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 5.6~seconds.
 
-To further increase its speed, it is possible to utilize parallelization of fitness evaluation (as described in Section \ref{section:parallel-evaluators}). By substituting the line no. 13 of Listing \ref{listing:algorithm-maxone} with \mintinline{swift}{ParallelEvaluator() { _ in MaxOneEvaluator() }}, the library creates a separate evaluator instance for every CPU core, instead of having only a single instance for all cores.
+To further increase its speed, it is possible to utilize parallelization of fitness evaluation as described in Section \ref{section:parallel-evaluators}. By substituting the line no. 13 of Listing \ref{listing:algorithm-maxone} with \mintinline{swift}{ParallelEvaluator() { _ in MaxOneEvaluator() }}, the library creates a separate evaluator instance for every CPU core, instead of sharing a single instance among all cores.
 
-After this modification, the number of performed iterations remains the same, however, the total execution decreases to 4.2~seconds. Note even though the experimental computer has 8 core CPU, such a small decrease in evaluation time is acceptable due to the fact that the only parallelized part of the algorithm is fitness evaluation, which in this particular case does not represent a significant portion of the processing time. The convergence of fitness values is plotted in Figure \ref{fig:maxone-fitness}.
+After this modification, the number of performed iterations remains the same, however, the total execution time decreases to 4.2~seconds. Note even though the experimental computer has 8 core CPU, such a small decrease in evaluation time is acceptable due to the fact that the only parallelized part of the algorithm is the evaluation of the fitness function, which in this particular case does not represent a significant portion of the processing time. The convergence of fitness values is plotted in Figure \ref{fig:maxone-fitness}.
 
 \begin{figure}[ht]
 	\centering
@@ -79,7 +79,55 @@ After this modification, the number of performed iterations remains the same, ho
 \end{figure}
 
 \section{Self-driving Car Simulation}
+The second example is slightly more complicated than the MAX-ONE Problem. Suppose that there is a robot car, capable of navigating in a simulated two-dimensional environment, which contains a closed curve. The goal is to find a way to steer the car, so that its movements follow the shape of the curve.
+
+The car is controlled by two parameters: the \textit{steering} and the \textit{acceleration}. Similarly to a realistic setting, changes in these parameters cannot influence the heading and the velocity of the car directly. Instead, an event loop operates in the simulated environment, evaluating all variables periodically with sufficient frequency. This event loop is responsible for altering the position of the car with respect to its instantaneous velocity and recalculating the instantaneous velocity with respect to the acceleration specified by the control program of the car.
+
+\todo % ověřit parametry volantu
+
+A similar process serves to adjust the heading of the car. However, while the acceleration is a continuous decimal parameter with values chosen within a set interval, the steering parameter is a discrete choice between values:
+~
+\begin{itemize}
+	\item hard left,
+	\item left,
+	\item neutral,
+	\item right,
+	\item hard right.
+\end{itemize}
+
+To recognize the closed curve in the simulated environment, the robotic car is equipped with a set of real-time detectors, which are positioned in a way to approximate view horizons of a real car driver. There are three detectors located in front of the car, one under the car and one behind it. All detectors are only capable of producing Boolean values, signifying whether the closed curve is located on their exact position at the time of measurement. This configuration approximates thresholding techniques, which are often used in detectors of real self-driving car prototypes.
+
+\subsection{Control Program}
+A control program of the self-driving car is a dedicated real-time software, which interacts with the event loop in order to determine movements of the car within the parameters of the simulation. The program periodically retrieves information measured by the car's detectors and calculates the values of the car's control parameters with the intention to steer it over the shape of the closed curve. Since the simulated environment may be randomized, the control program cannot rely on any other information than the outputs of the on-board detectors of the car. 
+
+To demonstrate how the presented library can be used in conjunction with other Swift components, it was decided that the car is to be controlled by a three-layer feed-forward neural network (for definition, see Section \ref{section:neural-networks}). The input layer of the network is comprised of 5 neurons corresponding to binary read-outs of the on-board detectors. The hidden layer contains 10 neurons. The output layer contains 2 neurons corresponding to the control parameters of the car.
+
+\subsection{Chromosome and Fitness}
+By standard means, it is possible to encode every neural network described in the previous section as a real vector from $d$-dimensional space, where $d$ denotes the number of connections between neurons and the components of the vector correspond to weight coefficients of such connections. By assuming that all connections between neurons from consecutive layers exist (substituting weight 0 for non-existing connections), fixed length of the vector can be ensured.
+
+The neural network can be therefore characterized by a range-initialized array of real numbers with the initialization interval $[d;d]$. Accounting for 5, 10 and 2 neurons in the input, hidden and output layer respectively, $d=5\cdot 10+10\cdot 2=70$.
+
+To evaluate and compare the quality of control programs, a simple simulated test is performed. Prior to the test, a random closed curve is generated and positioned within the environment. The test is performed by placing the car on a random position with random orientation and running its control program for a set period of time. During the test, various parameters of the car are monitored and recorded by the event loop. If the car leaves the bounds of the simulated environment at any instance, the simulation is terminated prematurely. 
+
+After 3 randomized tests are performed, the fitness function of the control program is evaluated as
+~
+\begin{align}
+	f(t_1,t_2,t_3) = \frac{t_1 + t_2 + t_3}{3 \cdot t_{max}}
+\end{align}
+~
+where $t_{max}$ is the maximum duration of a single randomized test and $t_1,t_2,t_3$ denote sums of durations spent on the curve by the car during tests 1, 2 and 3 respectively. All durations are specified in seconds.
+
+Clearly, the presented fitness function favors control programs which manage to keep the car on the curve more than programs which do not follow it or veer off the track. An implementation of a sequential evaluator using this function is illustrated in Listing \ref{listing:evaluator-sequential-car}.
+
+\begin{listing}[ht]
+	\inputswift{evaluator-sequential-car}
+	\caption{Implementation of the self-driving car evaluator.}
+	\label{listing:evaluator-sequential-car}
+\end{listing}
+
+\subsection{Algorithm}
 \todo
 
 \section{QWOP Player}
 \todo
+

@@ -124,6 +124,14 @@
 			}
 		},
 		{
+			"file": "tex/macros.tex",
+			"settings":
+			{
+				"buffer_size": 2796,
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "tex/preface.tex",
 			"settings":
 			{
@@ -135,7 +143,7 @@
 			"file": "tex/chap01.tex",
 			"settings":
 			{
-				"buffer_size": 12586,
+				"buffer_size": 12715,
 				"line_ending": "Unix"
 			}
 		},
@@ -151,15 +159,15 @@
 			"file": "tex/chap03.tex",
 			"settings":
 			{
-				"buffer_size": 10346,
+				"buffer_size": 17178,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "code/evaluator-sequential-car.swift",
+			"file": "bibliography.bib",
 			"settings":
 			{
-				"buffer_size": 712,
+				"buffer_size": 3572,
 				"line_ending": "Unix"
 			}
 		},
@@ -222,7 +230,11 @@
 	],
 	"file_history":
 	[
+		"/home/petrmanek/proj/bakalar/tex/chap02.tex",
+		"/home/petrmanek/proj/bakalar/tex/macros.tex",
 		"/home/petrmanek/proj/bakalar/bibliography.bib",
+		"/home/petrmanek/proj/bakalar/bibliography/AdaptationInSystems.bib",
+		"/home/petrmanek/proj/bakalar/code/evaluator-sequential-car.swift",
 		"/home/petrmanek/proj/bakalar/bibliography/NeuralNets.bib",
 		"/home/petrmanek/mff/xml/hw5/data.xml",
 		"/home/petrmanek/mff/xml/hw5/data.xsl",
@@ -345,11 +357,7 @@
 		"/home/petrmanek/.local/share/themes/Adwaita/gtk-3.0/gtk.css",
 		"/home/petrmanek/proj/blog/_config.yml",
 		"/home/petrmanek/proj/blog/CNAME",
-		"/home/petrmanek/proj/blog/_posts/2015-07-02-pane-redaktore-vite-co-jsou-festival-pasy.markdown",
-		"/home/petrmanek/proj/blog/index.html",
-		"/home/petrmanek/proj/blog/_includes/footer.html",
-		"/home/petrmanek/proj/blog/_includes/head.html",
-		"/home/petrmanek/proj/blog/about.md"
+		"/home/petrmanek/proj/blog/_posts/2015-07-02-pane-redaktore-vite-co-jsou-festival-pasy.markdown"
 	],
 	"find":
 	{
@@ -367,6 +375,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"minted",
 			"figure",
 			" mode=\"loop\"",
 			"39",
@@ -493,8 +502,7 @@
 			"colorScale(",
 			"logarith",
 			"epsilon",
-			"Math.log",
-			"logarithmic"
+			"Math.log"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -528,7 +536,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 5,
 			"sheets":
 			[
 				{
@@ -544,8 +552,8 @@
 						"selection":
 						[
 							[
-								2200,
-								2200
+								112,
+								112
 							]
 						],
 						"settings":
@@ -553,14 +561,44 @@
 							"syntax": "Packages/LaTeXing/support/LaTeX.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 765.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
+					"file": "tex/macros.tex",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2796,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2682,
+								2682
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/LaTeXing/support/LaTeX.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 810.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
 					"file": "tex/preface.tex",
 					"semi_transient": false,
 					"settings":
@@ -584,24 +622,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 3,
 					"file": "tex/chap01.tex",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12586,
+						"buffer_size": 12715,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								10245,
-								10245
+								354,
+								354
 							]
 						],
 						"settings":
@@ -609,14 +647,14 @@
 							"syntax": "Packages/LaTeXing/support/LaTeX.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 3852.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 4,
 					"file": "tex/chap02.tex",
 					"semi_transient": false,
 					"settings":
@@ -628,8 +666,8 @@
 						"selection":
 						[
 							[
-								6566,
-								6566
+								0,
+								0
 							]
 						],
 						"settings":
@@ -638,27 +676,27 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1357.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 5,
 					"file": "tex/chap03.tex",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10346,
+						"buffer_size": 17178,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4953,
-								4953
+								16615,
+								16615
 							]
 						],
 						"settings":
@@ -666,42 +704,44 @@
 							"syntax": "Packages/LaTeXing/support/LaTeX.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 602.0,
+						"translation.y": 5449.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
-					"file": "code/evaluator-sequential-car.swift",
+					"buffer": 6,
+					"file": "bibliography.bib",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 712,
+						"buffer_size": 3572,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								371,
-								371
+								3540,
+								3540
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Text/Plain text.tmLanguage"
+							"syntax": "Packages/LaTeX/Bibtex.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1098.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 7,
 					"file": "tex/epilog.tex",
 					"semi_transient": false,
 					"settings":
@@ -725,7 +765,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 7,
 					"type": "text"
 				}
 			]

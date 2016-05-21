@@ -79,41 +79,86 @@ After this modification, the number of performed iterations remains the same, ho
 \end{figure}
 
 \section{Self-driving Car Simulation}
-The second example can be considered slightly more complex and closer to practical applications than the MAX-ONE Problem. Suppose that there is a robot car capable of navigating in a simulated two-dimensional environment, which contains a closed curve called the \textit{track}. The goal is to find a way to steer the car, so that its movements follow the track. In real-world applications, this goal would be equivalent to keeping a car within the bounds of the road.
+The second example can be considered slightly more complex and closer to practical applications than the MAX-ONE Problem. Suppose that there is a robot car capable of navigating in a simulated two-dimensional environment (illustrated by Figure \ref{fig:self-driving-car}) which contains a closed curve resembling a \textit{race track}. The objective is to find a way to steer the car, so that it discovers the track and follows its contour. In real-world applications, this objective would be an analogy to keeping a car or a car-like drone within the bounds of a marked road.
 
-The simulated car is controlled by two parameters: the \textit{steering} and the \textit{acceleration}. Modelled after physical driving control systems like the steering wheel and the accelerator pedal, changes of these parameters cannot influence the heading and the velocity of the car directly. Instead, the control parameters affect car's heading and velocity gradually with respect to time, behaving more like their first derivatives.
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}[framed,background rectangle/.style={draw,fill=black!60!green}]
+		\draw[
+		  black!10!white,
+		  line width=3mm,
+		  postaction={
+		    decorate,
+		    decoration={
+		      markings,
+		      mark=between positions 0 and 1 step 0.2 with
+		      {
+		        \node[transform shape] {\includegraphics[width=.5cm]{img/car}};
+		      }
+		    }
+		  }
+		]
+		(0,0) to[out angle=0,in angle=180,curve through={(1,.4) .. (5,0) .. (10,.5) .. (7,4.3) .. (3,4) .. (1,2)}] (0,0);
+	\end{tikzpicture}
+	\caption{Illustration of the self-driving car simulation environment.}
+	\label{fig:self-driving-car}
+\end{figure}
 
-An event loop operates in the simulated environment, evaluating all variables periodically with a sufficient frequency. This event loop is responsible for altering the position of the car with respect to its instantaneous velocity and recalculating the instantaneous velocity with respect to the latest value of the acceleration control parameter. A similar process serves to adjust the heading of the car. However, while the acceleration is a continuous decimal parameter with values chosen within a set interval, the steering parameter is fundamentally a discrete choice between set values:
+The simulated car is controlled by two parameters: the \textit{steering} and the \textit{acceleration}. Modelled after physical driving control systems like the steering wheel and the accelerator pedal, changes in these parameters cannot influence the heading and the velocity of the car directly. Instead, the control parameters affect car's heading and velocity gradually with respect to the time, behaving more like their first derivatives.
+
+An event loop operates in the simulated environment, evaluating all variables periodically with a sufficient\footnote{For the experiments, the frequency of the event loop has been set to 40 Hz.} frequency. This event loop is responsible for periodically altering the position of the car with respect to its instantaneous velocity and recalculating the instantaneous velocity with respect to the latest value of the acceleration control parameter. A similar process serves to adjust the heading of the car. However, while the acceleration is a continuous decimal parameter with values chosen within a set interval, the steering parameter is fundamentally different, being a discrete choice between set values:
 ~
-\begin{itemize}
-	\item hard left,
-	\item left,
-	\item neutral,
-	\item right,
-	\item hard right.
-\end{itemize}
+\begin{description}
+	\item[Hard left]
+	Alter heading by $+\frac{1}{2}\pi$ radians with respect to the driver's viewport.
 
-To recognize the track in the environment, the robotic car is equipped with a set of simulated real-time detectors, which are positioned in a way to approximate the viewport of a real car driver. There are three detectors located in front of the car, one under the car and one behind it. All detectors are capable of producing Boolean values, signifying whether the closed curve is located on their exact position at the time of measurement. This configuration approximates thresholding techniques, which are frequently used in detectors of real self-driving car prototypes.
+	\item[Left]
+	Alter heading by $+\frac{1}{4}\pi$ radians with respect to the driver's viewport.
+
+	\item[Neutral]
+	Maintain current heading.
+
+	\item[Right]
+	Alter heading by $-\frac{1}{4}\pi$ radians with respect to the driver's viewport.
+
+	\item[Hard right]
+	Alter heading by $-\frac{1}{2}\pi$ radians with respect to the driver's viewport.
+\end{description}
+
+To recognize the race track in the environment, the robotic car is equipped with a set of simulated real-time detectors, which are positioned in a way to approximate the viewport of a real car driver. There are three detectors located in front of the car, one under the car and one behind it. All detectors are capable of producing Boolean values, signifying whether the track is located on their exact position at the time of measurement. This configuration approximates thresholding techniques frequently used in detectors of real self-driving car prototypes.
+
+In all simulations, the environment has square shape with the side equal to 10 kilometers. If at any point throughout the simulation the center of the car leaves the bounds of the environment, the simulation terminates. The simulation also ends if set maximum duration is exceeded. The simulated properties of the car (such as dimensions, maximum acceleration, etc.) mimic\footnote{The simulation limits the acceleration and the instantaneous velocity of the car to match the capabilities of its real-world equivalent. However, it is worth noting that the restrictions are exerted unrealistically by clamping numerical values.} those of \textit{Audi R8 5.2 V10 FSI Quattro (model 2010)}.
+
+The race track is non-deterministically generated at the beginning of the simulation. First, 30 to 50 points are chosen within the environment at random. These points are in fact selected from a slightly smaller padded rectangle within the environment bounds in order to prevent the generated track from accidentally leading the car to the edges of the environment. In the next step, the convex hull of the selected set of points is calculated by the Melkman Algorithm. \cite{MelkmanConvexHull} The points of the convex hull are transformed to a Bézier curve by simple interpolation utilizing cubic Catmull-Rom splines. \cite{CatmullRomSplines} Lastly, the thickness of the track curve is increased to 5 meters in order to improve tolerance in subsequent hit-testing.
 
 \subsection{Control Program}
 The control program of the car is a dedicated real-time software, which periodically interacts with the event loop of the environment in order to determine the values of control parameters based on the outputs of the on-board detectors.
 
-To demonstrate how the presented library can be used in conjunction with other Swift components, it was decided that the car is to be controlled by a three-layer feedforward neural network (for definition, see Section \ref{section:neural-networks}). The input layer of the network is comprised of 5 nodes corresponding to binary read-outs of the on-board detectors, the hidden layer contains 10 nodes and the output layer contains 2 nodes corresponding to the control parameters of the car.
+To demonstrate how the presented library can be used in conjunction with other Swift components, it was decided that the car is to be controlled by a three-layer feedforward neural network with common sigmoid activation function (for definition, see Section \ref{section:neural-networks}). The input layer of the network is comprised of 5 nodes corresponding to binary read-outs of the on-board detectors, the hidden layer contains 10 nodes and the output layer contains 2 nodes which correspond to the control parameters of the car.
 
-While the acceleration parameter is directly equal\footnote{The acceleration parameter is artificially clamped to the $[-100;100]$ interval to mimic physical limitations of the car.} to the output of its respective node, the steering parameter uses thresholds to determine in which directions should the heading of the car be adjusted.
+While the acceleration parameter is directly equal\footnote{The acceleration parameter is artificially limited to better approximate physical limitations of the car.} to the output of its respective node, the steering parameter uses thresholds to determine the change in heading.
 
 \subsection{Chromosome and Fitness}
-By standard means, it is possible to encode every neural network described in the previous section as a real vector from $d$-dimensional space, where $d$ denotes the number of interunit connections and the components of the vector correspond to weight coefficients of such connections. By assuming that all connections between neurons from consecutive layers exist (substituting the weight 0 for non-existing connections), fixed length of the vector can be ensured. The neural network can be therefore characterized by a range-initialized array of real numbers with the initialization interval $[d;d]$. Accounting for 5, 10 and 2 neurons in the input, hidden and output layer respectively, $d=5\cdot 10+10\cdot 2=70$.
+It is possible to encode the neural network described in the previous section as a real vector from $d$-dimensional space, where $d$ denotes the number of interunit connections and the components of the vector correspond to weight coefficients of such connections. By assuming that all connections between nodes from consecutive layers exist (substituting the weight 0 for non-existing connections), a fixed length of the vector can be ensured. The neural network can thus be characterized by a range-initialized array of real numbers with the initialization interval $[d;d]$. Accounting for 5, 10 and 2 nodes in the input, hidden and output layer respectively along with the bias parameters, $d=6\cdot 10+11\cdot 2=82$.
 
-To evaluate and compare the quality of control programs, a simple simulated test is performed. Prior to the test, a random track is generated and positioned within the environment. The test is performed by placing the car on a random position with random orientation and executing its control program continuously for a set period of time. Throughout the test, various parameters of the car are monitored and recorded by the event loop. Should the car leavesthe bounds of the simulated environment at any instance, the test is terminated prematurely. After 3 randomized tests are performed, the fitness function of the control program is evaluated as
+To evaluate and compare the quality of control programs, a simple simulated test is performed. Prior to the test, a random race track is generated and positioned within the environment. The car is placed in the center of the simulation with random heading and velocity. Since the race track is a closed curve, the car's initial straight-line trajectory intersects it in at least one point. The control program of the car is expected not to interfere significantly with the steering of the car up to this point. However, after reaching it, the control program should take action to prevent the car from leaving the track.
+
+The described test scenario is executed multiple times, in each instance with different random initial conditions. Throughout every test, various parameters of the car are monitored and recorded by the event loop of the simulation. Every test is terminated if one of two conditions is satisfied:
+~
+\begin{enumerate}
+	\item the center point of the car leaves the bounds of the environment, or
+	\item the maximum duration of the simulation (1 hour) is exceeded.
+\end{enumerate}
+
+A crucial parameter for the calculation of fitness values is the \textit{total distance driven over the race track} (denoted $\hat{d}$). Upon initialization, the distance is set to zero. In every iteration of the event loop, the traveled distance $\Delta d$ is calculated from the instantaneous velocity and the event loop frequency. If the detector located in the middle of the car reports contact with the race track, the calculated distance $\Delta d$ is added to $\hat{d}$, otherwise $\hat{d}$ remains unchanged. Clearly, $\hat{d}$ has only nonnegative values. For the purposes of the simulation, $\hat{d}$ has an upper bound in the distance traveled at the highest allowed velocity for the maximum duration of the simulation, which is $d_{max}=199,980$ m/s. At this point, the fitness function can be defined. The fitness function of the control program is evaluated as
 ~
 \begin{align}
-	f(t_1,t_2,t_3) = \frac{t_1 + t_2 + t_3}{3 \cdot t_{max}}
+	f(\hat{d}_1,\hat{d}_2,\dots,\hat{d}_5) = \frac{1}{5 \cdot d_{max}} \sum_{i=1}^5 \hat{d}_i
 \end{align}
 ~
-where $t_{max}$ is the maximum duration of a single randomized test and $t_1,t_2,t_3$ denote sums of durations spent\footnote{As recorded by the detector under the car.} on the track by the car during tests 1, 2 and 3 respectively. All durations are specified in seconds.
+where $\hat{d}_1,\hat{d}_2,\dots,\hat{d}_5$ denote the total distances driven over the race track calculated in tests 1 through 5 respectively. All distances are specified in meters.
 
-Clearly, the presented fitness function favors control programs which manage to keep the car on the track more than programs which do not follow it very well or veer off it eventually. Of course, randomly driving over the track affects the final fitness value even though the control program might not manage to follow it. Nevertheless, performing the test multiple times with randomized parameters should minimize the probability of misclassification. An implementation of a sequential evaluator using this function is illustrated in Listing \ref{listing:evaluator-sequential-car}.
+Clearly, the presented fitness function favors control programs which manage to keep the car on the track more than programs which do not follow it very well or veer off it eventually. In addition, since the function operates on distances, control programs are motivated to discover the race track as quickly as possible and to maximize the distance traveled over it. An implementation of a sequential evaluator using this function is illustrated in Listing \ref{listing:evaluator-sequential-car}.
 
 \begin{listing}[ht]
 	\inputswift{evaluator-sequential-car}
@@ -121,9 +166,7 @@ Clearly, the presented fitness function favors control programs which manage to 
 	\label{listing:evaluator-sequential-car}
 \end{listing}
 
-In the evaluator, the control program along with the neural network itself\footnote{The implementation of the FFNN was provided by the \textit{Swift AI} open-source project, which is available online: \url{https://github.com/collinhundley/Swift-AI}} is encapsulated in an instance of the \texttt{NetDriver} type, which is conformant to the \texttt{CarDriver} protocol that formalizes requirements on automated car controllers.
-
-\todo % doplnit výsledek
+In the evaluator, the control program along with the neural network itself\footnote{The implementation of the FFNN was provided by the \textit{Swift AI} open-source project, which is available online: \url{https://github.com/collinhundley/Swift-AI}} is encapsulated in an instance of the \texttt{NetDriver} type, which is conformant to the \texttt{CarDriver} protocol that formalizes requirements on automated car controllers. Since the evaluator is fully self-contained, it enables parallelization through the \texttt{ParallelEvaluator<T>} type. To visualize the simulation, the \texttt{CarSimulation} initializer can be called in the \textit{verbose}, which generates a MATLAB script capable of displaying a plot of the car's position in time.
 
 \section{Automated QWOP Player}
 The third and final usage demonstration of the presented library is closely related to genetic programming techniques proposed in \cite{EvolvingQwopGaits}. In the referenced publication, researchers describe their attempts at training artificial programs in playing an online computer game, achieving scores comparable to or exceeding those of human players. This section is dedicated to replicating parts of their results.
@@ -170,7 +213,7 @@ To consistently interpret QWOP strategies encoded into strings, the authors of \
 	By default, Qwopper includes its own implementation of the GA, which has been used to produce strings by means of genetic programming.
 \end{description}
 
-Apart from blindly simulating user inputs, the interpretter component of Qwopper includes a basic OCR algorithm (illustrated in Figure \ref{figure:QWOP-OCR}), which is capable of determining the current state of the game (\textit{running} or \textit{paused}) and the distance traveled by the athlete. Combining this information with the duration of the interpretation, Qwopper can periodically estimate the instantaneous velocity of the runner achieved by a given strategy.
+Apart from blindly simulating user inputs, the interpretter component of Qwopper includes a basic OCR algorithm (illustrated in Figure \ref{figure:QWOP-OCR}), which is capable of determining the current state of the game (\textit{running} or \textit{paused}) and the distance traveled by the athlete. Combining this information with the duration of the run, Qwopper can periodically estimate the instantaneous velocity of the runner achieved by a given strategy.
 
 \begin{figure}[ht]
 	\centering
@@ -179,7 +222,8 @@ Apart from blindly simulating user inputs, the interpretter component of Qwopper
 	\label{figure:QWOP-OCR}
 \end{figure}
 
-It is worth noting at this point that Qwopper already has all necessary components to generate, evaluate and recombine QWOP strategy strings on its own. However, for the purpose of demonstration of the presented library, its functions are reduced to only serve as a strategy string evaluation tool.
+It is worth noting at this point that Qwopper already has all necessary components to generate, evaluate and recombine QWOP strategy strings on its own. However, for the purpose of demonstration of the GA provided by the presented library, its functions are reduced to only serve as a strategy string evaluation tool.
 
 \subsection{Interfacing Qwopper with Swift}
 asd
+

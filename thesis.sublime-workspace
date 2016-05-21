@@ -230,6 +230,7 @@
 	],
 	"file_history":
 	[
+		"/home/petrmanek/Dokumenty/proj/tpx/thesis/thesis.tex",
 		"/home/petrmanek/proj/bakalar/tex/chap02.tex",
 		"/home/petrmanek/proj/bakalar/tex/macros.tex",
 		"/home/petrmanek/proj/bakalar/bibliography.bib",
@@ -264,7 +265,6 @@
 		"/home/petrmanek/proj/tpx/thesis/code/security.sql",
 		"/home/petrmanek/proj/tpx/thesis/code/frames.sql",
 		"/home/petrmanek/proj/tpx/thesis/code/rootfiles.sql",
-		"/home/petrmanek/Dokumenty/proj/tpx/thesis/thesis.tex",
 		"/home/petrmanek/Dokumenty/proj/tpx/thesis/nomenclature.tex",
 		"/home/petrmanek/tikztest/tree.tex",
 		"/home/petrmanek/dld/science.bib",
@@ -704,7 +704,7 @@
 							"syntax": "Packages/LaTeXing/support/LaTeX.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 5449.0,
+						"translation.y": 2983.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,

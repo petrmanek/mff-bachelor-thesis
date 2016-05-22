@@ -1,20 +1,17 @@
 class CarEvaluator: SequentialEvaluator<CarChromosome> {
-    let sim = CarSimulationEnvironment()
-    let maxDuration = NSTimeInterval(30)
-    let attempts = 3
+    let sim = CarSimulation()
+    let maxDistance = Double(55.55 * 3600)
     override func evaluateChromosome(chromosome: CarChromosome) 
         -> Fitness {
             sim.reset()
-            sim.randomizeCurve()
             sim.controlProgram = NetDriver(net: chromosome.toFFNN())
-            var results = [Fitness]()
-            for _ in 1...attempts {
+            var sumDistance = Double(0)
+            for _ in 1...5 {
+                sim.randomizeCurve()
                 sim.randomizeCar()
-                let outcome = sim.run(maxDuration: maxDuration)
-                results.append(Fitness(outcome.timeSpentOnTrack)
-                    / Fitness(maxDuration))
+                let outcome = sim.run(maxDuration: 3600)
+                sumDistance += outcome.distanceTraveledOnTrack
             }
-
-            return results.average
+            return Fitness(sumDistance) / Fitness(5 * maxDistance)
     }
 }

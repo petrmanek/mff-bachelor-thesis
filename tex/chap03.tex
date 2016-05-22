@@ -166,13 +166,57 @@ Clearly, the presented fitness function favors control programs which manage to 
 	\label{listing:evaluator-sequential-car}
 \end{listing}
 
-In the evaluator, the control program along with the neural network itself\footnote{The implementation of the FFNN was provided by the \textit{Swift AI} open-source project, which is available online: \url{https://github.com/collinhundley/Swift-AI}} is encapsulated in an instance of the \texttt{NetDriver} type, which is conformant to the \texttt{CarDriver} protocol that formalizes requirements on automated car controllers. Since the evaluator is fully self-contained, it enables parallelization through the \texttt{ParallelEvaluator<T>} type. To visualize the simulation, the \texttt{CarSimulation} initializer can be called in the \textit{verbose}, which generates a MATLAB script capable of displaying a plot of the car's position in time.
+In the evaluator, the control program along with the neural network itself\footnote{The implementation of the FFNN was provided by the \textit{Swift AI} open-source project, which is available online: \url{https://github.com/collinhundley/Swift-AI}} is encapsulated in an instance of the \texttt{NetDriver} type, which is conformant to the \texttt{CarDriver} protocol that formalizes requirements on automated car controllers (not necessarily only those operating with neural networks). Since the evaluator is fully self-contained, it enables parallelization by \texttt{ParallelEvaluator<T>} which was shown in the last example. To visualize the simulation, the \texttt{CarSimulation} initializer can be called in the \textit{verbose}, which automatically generates a MATLAB script capable of displaying animated plot of the car's position in time.
 
-\section{Automated QWOP Player}
-The third and final usage demonstration of the presented library is closely related to genetic programming techniques proposed in \cite{EvolvingQwopGaits}. In the referenced publication, researchers describe their attempts at training artificial programs in playing an online computer game, achieving scores comparable to or exceeding those of human players. This section is dedicated to replicating parts of their results.
+The GA declaration is analogous to that used in the MAX-ONE Problem (see Listing \ref{listing:algorithm-maxone}). The GA has been configured with the following properties:
+~
+\begin{itemize}
+	\item The number of individuals in every generation is 200.
+	\item Elitism is used to preserve the best chromosome.
+	\item The algorithm terminates after 100 iterations are performed or after the highest fitness value reaches 1.0.
+	\item The $\beta$-tree contains a single chance node:
+	~
+	\begin{itemize}
+		\item With the probability 0.8, apply the reproduction operator on a random individual.
+		\item With the probability 0.8, apply the mutation operator on an individual selected by the roulette selection.
+		\item With the probability 0.1, apply the one-point crossover operator on the winners of two randomized tournaments, each containing five contestants.
+	\end{itemize}
+\end{itemize}
+
+When executed, the presented algorithm performs 100~iterations, reaching the best fitness value~0.973. Unlike the MAX-ONE algorithm, the convergence rate of the execution is quite high, possibly hinting at suboptimal solution. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 4,2~hours with the parallelization enabled. The convergence of fitness values is plotted in Figure \ref{fig:car-fitness}.
+
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+			height=9cm,
+			width=0.9\textwidth,
+			grid=major,
+			xlabel={Generation},
+			ylabel={Fitness},
+			ymin=0, ymax=1,
+			xmin=1, xmax=100,
+			no markers,
+			legend pos=south east
+		]
+			
+		\addplot table {data/car-fitness-best.dat};
+		\addlegendentry{Best fitness}
+
+		\addplot table {data/car-fitness-average.dat};
+		\addlegendentry{Average fitness}
+
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Fitness convergence chart of the self-driving car GA.}
+	\label{fig:car-fitness}
+\end{figure}
+
+\section{Artificial QWOP Player}
+The third and final usage demonstration of the presented library is closely related to genetic programming techniques shown in \cite{EvolvingQwopGaits}. In the referenced publication, researchers describe their attempts at training artificial programs in playing an online computer game, achieving scores comparable to or exceeding those of human players. This section is dedicated to replicating parts of their results.
 
 \subsection{The QWOP Game}
-QWOP (shown in Figure \ref{figure:QWOP}) is a popular online game, available for free at Foddy.net. \cite{QwopWebsite} In the game, the player controls movements of an Olympic athlete during a sprint race. The objective is to reach the longest possible distance, terminating at the 100-meter mark. If at any point throughout the race the head or any of the hands of the athlete come into contact with the ground, the athlete loses his balance, falls and the game is over. The control scheme of QWOP is very simple. By pressing keys Q, W, O, P on the keyboard (hence the name of the game), the player controls movements of different muscle groups within the athlete's body. Keys Q and W move forward the left and the right thighs and keys O and P move backward the left and the right calves respectively.
+QWOP (shown in Figure \ref{figure:QWOP}) is a popular online game, available for free at Foddy.net. \cite{QwopWebsite} In the game, the player controls movements of an Olympic athlete during a sprint race. The objective is to reach the longest possible distance, terminating at the 100-meter mark. If at any point throughout the race, the head or any of the hands of the athlete come into contact with the ground, the athlete loses his balance, falls and the game is over. The control scheme of QWOP is very simple. By pressing keys Q, W, O, P on the keyboard (hence the name of the game), the player controls movements of different muscle groups within the athlete's body. Keys Q and W move forward the left and the right thighs and keys O and P move backward the left and the right calves respectively.
 
 \begin{figure}[ht]
 	\centering
@@ -181,10 +225,10 @@ QWOP (shown in Figure \ref{figure:QWOP}) is a popular online game, available for
 	\label{figure:QWOP}
 \end{figure}
 
-In spite of the simplicity of the game goals and the straightforward control scheme, QWOP is well-known for its notorious difficulty. This is mainly due to its ``ragdoll physics'' engine, which heavily oversimplifies the mechanics of th simulated runner to the point where certain behaviors might seem unintuitive or even unpredictable. \cite{QwopHomework} The biggest challenge of the game can be described as to devise a repeatable strategy to achieve and maintain precise synchronization of key presses, receiving only limited sensory feedback from the game.
+In spite of the simplicity of the game goals and its straightforward control scheme, QWOP is well-known for its notorious difficulty. This is mainly due to its ``ragdoll physics'' engine, which heavily oversimplifies the mechanics of the simulated runner to the point where certain behaviors might seem unintuitive or even unpredictable. \cite{QwopHomework} The biggest challenge of the game can be described as to devise a repeatable strategy to achieve and maintain precise synchronization of key presses, receiving only limited sensory feedback from the game.
 
 \subsection{Previous Work}
-QWOP has been mentioned in several publications, mostly in relation to machine learning. The challenge of the game has been subject of study primarily because of its appearent similarity to the problem of evolving bipedal gaits in physical robots and other cybernetic applications.
+QWOP has been previously mentioned in several publications, mostly in relation to machine learning. The challenge of the game has been subject of study primarily because of its appearent similarity to the problem of evolving bipedal gaits in physical robots and other cybernetic applications.
 
 To describe QWOP strategies, the authors of \cite{EvolvingQwopGaits} have used string encodings. Since one of these encodings is used\footnote{The used encoding is the \textit{Encoding 1}, which was originally proposed by \cite{QwopEncoding}.} in this demonstration, its definition is included in this section. The encoded strings represent sequences of instructions to the player without any regards to the state of the game. The encoding uses symbols ``\texttt{q,Q,w,W,o,O,p,P,+}''. A capital letter represents pressing the corresponding key on the keyboard, a lowercase letter represents a key release. The ``\texttt{+}'' symbol stands for a delay in which the current state of inputs is maintained for 150 milliseconds. \cite{EvolvingQwopGaits}
 
@@ -213,7 +257,7 @@ To consistently interpret QWOP strategies encoded into strings, the authors of \
 	By default, Qwopper includes its own implementation of the GA, which has been used to produce strings by means of genetic programming.
 \end{description}
 
-Apart from blindly simulating user inputs, the interpretter component of Qwopper includes a basic OCR algorithm (illustrated in Figure \ref{figure:QWOP-OCR}), which is capable of determining the current state of the game (\textit{running} or \textit{paused}) and the distance traveled by the athlete. Combining this information with the duration of the run, Qwopper can periodically estimate the instantaneous velocity of the runner achieved by a given strategy.
+Apart from blindly simulating user inputs, the interpretter component of Qwopper includes a basic OCR algorithm (illustrated in Figure \ref{figure:QWOP-OCR}), which is capable of determining the current state of the game (\textit{running} or \textit{paused}) and reading the distance traveled by the athlete. Combining this information with the duration of the run, Qwopper can periodically estimate the instantaneous velocity of the runner achieved by a given strategy.
 
 \begin{figure}[ht]
 	\centering
@@ -225,5 +269,85 @@ Apart from blindly simulating user inputs, the interpretter component of Qwopper
 It is worth noting at this point that Qwopper already has all necessary components to generate, evaluate and recombine QWOP strategy strings on its own. However, for the purpose of demonstration of the GA provided by the presented library, its functions are reduced to only serve as a strategy string evaluation tool.
 
 \subsection{Interfacing Qwopper with Swift}
-asd
+The encoding defined in the previous section can be simply used in a chromosome data structure. By the use of Swift enumerations and the conformance to the \texttt{Discrete} protocol (for usage example, see Listing \ref{listing:discrete-sample}), QWOP game strategies can be stored in a range-initialized array with the initialization interval $[1;200]$.
 
+To efficiently evaluate different game strategies, it is imperitive that the Qwopper application is capable of communicating with the GA implemented in Swift. For that reason, the main interface of Qwopper has been altered to serve this purpose. Upon execution, the modified version of Qwopper receives three shell parameters:
+~
+\begin{description}
+	\item[Strategy string]
+	The strategy to evaluate. For example, see Listing \ref{listing:encoding-example}.
+
+	\item[Number of attempts]
+	How many times should the runs be repeated.
+
+	\item[Maximum duration]
+	The maximum duration of a single run in milliseconds.
+\end{description}
+
+After parsing the input, the application finds an open game window and attempts to play the game, following the instructions in the strategy string. When the athlete falls or the set maximum duration is exceeded, the application prints information about the run to the standard output and starts another run (or terminates). The monitored information includes:
+~
+\begin{description}
+	\item[Result]
+	A Boolean flag signifying whether the athlete has fallen in the run.
+
+	\item[Duration]
+	Duration of the run in milliseconds.
+
+	\item[Distance]
+	Distance achieved by the athlete in meters.
+\end{description}
+
+In the evaluation of the GA, the execution of Qwopper is represented by a \texttt{QwopEvaluator} object, which is a subclass of the \texttt{SequentialEvaluator<T>} type. This object is responsible for executing the application with correct parameters and reading its outputs, from which the value of the fitness function is calculated. The fitness function of a QWOP strategy is defined as
+~
+\begin{align}
+	f(d_1,d_2,\dots,d_n) = \frac{1}{n \cdot d_{max}} \sum_{i=1}^n d_i
+\end{align}
+~
+where $d_1,d_2,\dots,d_n$ denote the distances run by the athlete in $n$ individual attempts at executing the strategy by Qwopper. The value $d_{max}=100$ is the maximum achievable distance of a single run. All distances are specified in meters. Since multiple active instances of Qwopper interfere with each other, instances of the \texttt{QwopEvaluator} type do not support parallelization of fitness evaluation shown in the previous demonstrations.
+
+\subsection{Algorithm}
+Due to the time-consuming nature of fitness evaluation and the lack of parallelization options, the GA for the QWOP runner training has been configured with the following parameters:
+~
+\begin{itemize}
+	\item The number of individuals in every generation is 80.
+	\item Elitism is used to preserve the best chromosome.
+	\item The algorithm terminates after 18 hours of execution or after the highest fitness value reaches 0.8.
+	\item In the evaluation of a single strategy, Qwopper attempts 1 run with the maximum duration of 30 seconds.
+	\item The $\beta$-tree contains a single chance node:
+	~
+	\begin{itemize}
+		\item With the probability 0.5, apply the reproduction operator on a random individual.
+		\item With the probability 0.3, apply the mutation operator on an individual selected by the roulette selection.
+		\item With the probability 0.2, apply the one-point crossover operator on the winners of two randomized tournaments, each containing five contestants.
+	\end{itemize}
+\end{itemize}
+
+When executed, the presented algorithm performs 38~iterations, reaching the best fitness value~0.224. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 18~hours. The convergence of fitness values is plotted in Figure \ref{fig:qwop-fitness}.
+
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+			height=9cm,
+			width=0.9\textwidth,
+			grid=major,
+			xlabel={Generation},
+			ylabel={Fitness},
+			ymin=0, ymax=0.4,
+			xmin=1, xmax=38,
+			no markers,
+			legend pos=north east,
+			ytick={0.1,0.2,...,0.4}
+		]
+			
+		\addplot table {data/qwop-fitness-best.dat};
+		\addlegendentry{Best fitness}
+
+		\addplot table {data/qwop-fitness-average.dat};
+		\addlegendentry{Average fitness}
+
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Fitness convergence chart of the QWOP GA.}
+	\label{fig:qwop-fitness}
+\end{figure}

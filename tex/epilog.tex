@@ -1,14 +1,7 @@
 \chapter{Conclusion}
 
-\section{Deployment}
-\todo
+This thesis has proposed and implemented a genetic programming library in Swift. The library consists of multiple components, which can be used separately or in conjunction to facilitate building of efficient genetic algorithms. Moreover, the presented library is not dependent on any platform-specific components, and is thus portable to any operating system capable of supporting\footnote{At the time of writing this work, Swift runtime environment was supported on Apple Mac OS X, iOS and certain Linux distributions (Ubuntu, Debian, Gentoo, CentOS).} the Swift runtime environment. 
 
-\section{Applications}
-\todo
+To demonstrate practical usage of the library and its integration with already existing third-party components, five example projects have been prepared and documented in its distribution package, some of which were referenced by this thesis. In the last example, results comparable\footnote{The best strategy generated in this thesis was able to complete the QWOP race in approximately 2.5 minutes. One of the best-evolved gaits presented in \cite{EvolvingQwopGaits}, which used the same encoding, achieved the same distance in ``about 2 minutes.''} to those presented in \cite{EvolvingQwopGaits}.
 
-\subsection{Teaching}
-\todo
-
-\subsection{Portable Applications}
-\todo
-
+The library package (including documentation and the mentioned examples) is available online\footnote{The library website is: \url{https://github.com/petrmanek/Revolver}} or as an electronical attachment to this thesis for free public use. Thanks to Swift's compatibility with iOS, it has various applications in signal processing, especially in portable and wearable devices. In addition, because of the simple syntax of the Swift source syntax, it has the potential to aid in teaching genetic algorithms.

@@ -192,7 +192,7 @@ The GA declaration is analogous to that used in the MAX-ONE Problem (see Listing
 \end{itemize}
 
 \subsection{Results}~\label{section:car-results}
-When executed, the presented algorithm performs 100~iterations, reaching the best fitness value~0.973. Unlike the MAX-ONE algorithm, the convergence rate of the execution is quite high, possibly hinting at suboptimal solution. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 4,2~hours with the parallelization enabled. The convergence of fitness values is plotted in Figure \ref{fig:car-fitness}.
+When executed, the presented algorithm performs 100~iterations, reaching the best fitness value~0.973. Unlike the MAX-ONE algorithm, the convergence rate of the execution is quite high, possibly hinting at suboptimal solution. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 4.2~hours with the parallelization enabled. The convergence of fitness values is plotted in Figure \ref{fig:car-fitness}.
 
 \begin{figure}[ht]
 	\centering
@@ -253,7 +253,7 @@ Upon interpretation, the encoded string is read from the left to the right, exec
                fontsize=\small]{text}
 QO+qPW+wpo+QPW+wO+qp+P+Q+++qp+QPW+wo+qp+POQ+q+W+Qp+qwo
 	\end{minted}
-	\caption[Example encoded QWOP game strategy.]{Example encoded QWOP game strategy, which translates to \textit{``Press Q and O, hold them for 150ms, release Q, press P and W, hold for 150ms, release W, P and O, wait...''} \cite{EvolvingQwopGaits}}
+	\caption[Example encoded QWOP game strategy.]{Example encoded QWOP game strategy, which translates to \textit{``Press Q and O, hold them for 150 ms, release Q, press P and W, hold for 150 ms, release W, P and O, wait...''} \cite{EvolvingQwopGaits}}
 	\label{listing:encoding-example}
 \end{listing}
 
@@ -270,7 +270,7 @@ To consistently interpret QWOP strategies encoded into strings, the authors of \
 	By default, Qwopper includes its own implementation of the GA, which has been used to produce strings by means of genetic programming.
 \end{description}
 
-Apart from blindly simulating user inputs, the interpretter component of Qwopper includes a basic OCR algorithm (illustrated in Figure \ref{figure:QWOP-OCR}), which is capable of determining the current state of the game (\textit{running} or \textit{paused}) and reading the distance traveled by the athlete. Combining this information with the duration of the run, Qwopper can periodically estimate the instantaneous velocity of the runner achieved by a given strategy.
+Apart from blindly simulating user inputs, the interpreter component of Qwopper includes a basic OCR algorithm (illustrated in Figure \ref{figure:QWOP-OCR}), which is capable of determining the current state of the game (\textit{running} or \textit{paused}) and reading the distance traveled by the athlete. Combining this information with the duration of the run, Qwopper can periodically estimate the instantaneous velocity of the runner achieved by a given strategy.
 
 \begin{figure}[ht]
 	\centering

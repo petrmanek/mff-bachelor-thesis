@@ -69,7 +69,7 @@ The \textit{selection pressure} is the degree to which the better individuals ar
 \section{Neural Networks}\label{section:neural-networks}
 A neural network is an interconnected assembly of simple processing elements, \textit{units} or \textit{nodes}, whose functionality is loosely based on the animal neuron. The processing ability of the network is stored in the interunit connection strengths, or \textit{weights}, obtained by a process of adaptation to, or \textit{learning} from a set of training patterns. \cite{NeuralNets}
 
-A neural network is called \textit{feedforward} (denoted FFNN), if its interunit connections do not form a cycle. In such case, it makes sense to clasify its nodes in separate \textit{layers} with respect to their topological ordering. The first layer of the network is customarily called the \textit{input layer}, whereas the last layer is called the \textit{output layer}. The remaining layers are referred to as the \textit{hidden layers}. This is illustrated in Figure \ref{fig:FFNN}.
+A neural network is called \textit{feedforward} (denoted FFNN), if its interunit connections do not form a cycle. In such case, it makes sense to classify its nodes in separate \textit{layers} with respect to their topological ordering. The first layer of the network is customarily called the \textit{input layer}, whereas the last layer is called the \textit{output layer}. The remaining layers are referred to as the \textit{hidden layers}. This is illustrated in Figure \ref{fig:FFNN}.
 
 \begin{figure}[ht]
 	\centering
@@ -184,4 +184,4 @@ where $\{x_i\}_{i=1}^n$ denote the input values, $\{w_i\}_{i=1}^n$ denote the in
 	\label{fig:neuron-combination}
 \end{figure}
 
-It is worth noting at this point that a constant number of weights can be achieved by assigning non-existant interunit connections zero weights. For the purposes of implementation, it is also possible to approximate the effects of the bias parameter by creating one additional node in every layer and configuring it to produce constant output. The bias of every node in the layer is then simply encoded into connection weights of such node.
+It is worth noting at this point that a constant number of weights can be achieved by assigning nonexistent interunit connections zero weights. For the purposes of implementation, it is also possible to approximate the effects of the bias parameter by creating one additional node in every layer and configuring it to produce constant output. The bias of every node in the layer is then simply encoded into connection weights of such node.

@@ -4,20 +4,20 @@ This chapter describes three selected demonstrations of the application of the l
 All of the presented examples are included in the attached library distribution package. To ensure that the mentioned results can be replicated, all instances of genetic algorithms use seeded entropy generators.
 
 \section{MAX-ONE Problem}~\label{section:maxone}
-The first example is a very trivial problem. It is defined as follows: \textit{Given all bit strings of length between 10 and 100 characters, find the string which maximizes the number of ones.} Although the optimal solution is clearly a string of 100 ones, the simplicity of the problem is ideally suited for a demonstration of the individual components of the library.
+The first example is a very trivial problem. It is defined as follows: \textit{Given all bit strings of length between 10 and 55 characters, find the string which maximizes the number of ones.} Although the optimal solution is clearly a string of 55 ones, the simplicity of the problem is ideally suited for a demonstration of the individual components of the library.
 
 The following sections contain a definition of the chromosome data structure and the fitness function for the MAX-ONE problem (Section~\ref{section:maxone-chromosome}), a declaration of the GA itself (Section~\ref{section:maxone-algorithm}) and the results of the algorithm (Section~\ref{section:maxone-results}).
 
 \subsection{Chromosome and Fitness}~\label{section:maxone-chromosome}
-The domain space is a finite set. Its points can be characterized as range-initialized arrays of Boolean values with the initialization interval $[10;100]$, which is declared analogically to the array used in solving the Knapsack Problem (see Listing \ref{listing:array-knapsack}). Since range-initialized arrays already support basic genetic operators, they can be used as chromosomes in the GA.
+The domain space is a finite set. Its points can be characterized as range-initialized arrays of Boolean values with the initialization interval $[10;55]$, which is declared analogically to the array used in solving the Knapsack Problem (see Listing \ref{listing:array-knapsack}). Since range-initialized arrays already support basic genetic operators, they can be used as chromosomes in the GA.
 
 To evaluate and compare the quality of chromosomes, a fitness function is required. For the purposes of this simple example, the fitness function can be defined as
 ~
 \begin{align}
-	f(s_1, s_2, \dots, s_{n}) = \frac{1}{100}\sum_{i=1}^{n} s_i
+	f(s_1, s_2, \dots, s_{n}) = \frac{1}{55}\sum_{i=1}^{n} s_i
 \end{align}
 ~
-where $\{s_i\}_{i=1}^{n}$ are the bits and $n\in[10;100]$ is the length of the chromosome. A simple implementation of a sequential evaluator using this function is shown in Listing \ref{listing:evaluator-sequential-maxone}.
+where $\{s_i\}_{i=1}^{n}$ are the bits and $n\in[10;55]$ is the length of the chromosome. A simple implementation of a sequential evaluator using this function is shown in Listing \ref{listing:evaluator-sequential-maxone}.
 
 \begin{listing}[ht]
 	\inputswift{evaluator-sequential-maxone}
@@ -50,11 +50,11 @@ To clearly explain the syntax of the \texttt{GeneticAlgorithm<T>} class initiali
 \end{itemize}
 
 \subsection{Results}~\label{section:maxone-results}
-When executed, the presented algorithm performs 757~iterations before reaching the best fitness value~1.0 and yielding the optimal solution consisting of 100~ones. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 5.6~seconds.
+When executed, the presented algorithm performs 270~iterations before reaching the best fitness value~1.0 and yielding the optimal solution consisting of 55~ones. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 1.55~seconds.
 
 To further increase its speed, it is possible to utilize parallelization of fitness evaluation as described in Section \ref{section:parallel-evaluators}. By substituting the line no. 13 of Listing \ref{listing:algorithm-maxone} with \mintinline{swift}{ParallelEvaluator() { _ in MaxOneEvaluator() }}, the library creates a separate evaluator instance for every CPU core, instead of sharing a single instance among all cores.
 
-After this modification, the number of performed iterations remains the same, however, the total execution time decreases to 4.2~seconds. Note even though the experimental computer has 8 core CPU, such a small decrease in evaluation time is acceptable due to the fact that the only parallelized part of the algorithm is the evaluation of the fitness function, which in this particular case does not represent a significant portion of the processing time. The convergence of fitness values is plotted in Figure \ref{fig:maxone-fitness}.
+After this modification, the number of performed iterations remains the same, however, the total execution time decreases to 1.46~seconds. Note even though the experimental computer has 8 core CPU, such a small decrease in evaluation time is acceptable due to the fact that the only parallelized part of the algorithm is the evaluation of the fitness function, which in this particular case does not represent a significant portion of the processing time. The convergence of fitness values is plotted in Figure \ref{fig:maxone-fitness}.
 
 \begin{figure}[ht]
 	\centering
@@ -66,7 +66,7 @@ After this modification, the number of performed iterations remains the same, ho
 			xlabel={Generation},
 			ylabel={Fitness},
 			ymin=0, ymax=1,
-			xmin=1, xmax=757,
+			xmin=1, xmax=270,
 			no markers,
 			legend pos=south east
 		]

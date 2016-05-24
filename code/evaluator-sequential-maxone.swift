@@ -4,6 +4,6 @@ class MaxOneEvaluator: SequentialEvaluator<MaxOneChromosome> {
             let numberOfOnes = chromosome.array.reduce(0) { 
                 $0 + ($1 ? 1 : 0) 
             }
-            return Fitness(numberOfOnes) / Fitness(100)
+            return Fitness(numberOfOnes) / Fitness(55)
     }
 }

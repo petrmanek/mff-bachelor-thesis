@@ -1,1 +1,24 @@
-% nothing here due to refactoring lol
+\chapter{Introduction}
+
+
+
+\section{The Swift Programming Language}
+In 2014, the Apple Corporation in California unveiled a new programming language called \textit{Swift}. \cite{SwiftReference} This language has been since then widely adopted by software developers and computer engineers, succeeding Objective-C as the main programming language used for application development on the Apple platform. Building on proven coding paradigms, such as generics and strongly-typed objects, Swift strives to be a modern, concise and safe alternative to popular languages like Python or C++ while attempting to maintain comparable performance in terms of computational speed and memory management (this has been observed experimentally \cite{PrimateLabsBenchmark}).
+
+The latest version of the language is called \textit{Swift 2.2}. Announced at the World Wide Developer Conference in 2015, the new Swift extended minimalistic syntax of its predecessor to include error handling, condition assertion and instruction deferring. It also enables developers to create \textit{frameworks}, redistributable packages containing documentation and binary libraries that other developers can include and utilize in their projects.
+
+Since Fall 2015, Swift along with its standard library\footnote{The Swift standard library is comprised of two main components, the \textit{Foundation} module and the \textit{libdispatch} scheduling library.} became an open-source project, integrating itself into the LLVM (Low-level Virtual Machine), a widely-used compiler compatible with thousands of devices running Linux-based operating systems. Thanks to these modifications, Swift has been lately discussed as an attractive option for academic collaborations and community-driven projects.
+
+
+\section{Structure of This Document}
+For the reader's convenience, this section contains a brief description of the rest of this thesis.
+
+Chapter 2 provides details on the object design of the presented library. It introduces its individual components, explains their purpose and gives recommendations on their usage. In addition, the chapter includes short Swift code fragments to further illustrate some referenced programming techniques.
+
+Chapter 3 is dedicated to practical usage demonstrations of the library as a whole. It contains three demonstrations selected from a broader list of example projects which are part of the library source package. In the first demonstration, a trivial abstract problem is solved with GA. The goal of the second demonstration is to train a real-time car-driving software based on FFNN. The third demonstration attempts to partially replicate results presented in \cite{EvolvingQwopGaits}.
+
+Chapter 4 contains the conclusion of this thesis. It summarizes its objectives, states its accomplishments and concludes by suggesting potential applications of the library in research, portable devices and teaching.
+
+Appendix A is a survey of other GA libraries, conducted in September 2015 as a part of preliminary specification, which eventually led to the writing of this work.
+
+The digital version of this thesis also contains Appendix B, which contains the library source package with implementation, unit tests, documentation and example projects.

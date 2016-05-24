@@ -1,380 +1,429 @@
-\chapter{Usage Demonstration}~\label{chapter:usage-demo}
-This chapter describes three selected demonstrations of the application of the library on practical problems with increasing difficulty: the MAX-ONE problem (Section~\ref{section:maxone}), a self-driving car simulation (Section~\ref{section:self-driving-car}) and an artificial QWOP game player (Section~\ref{section:qwop-player}).
+\chapter{Library Documentation}~\label{chapter:documentation}
+This chapter contains technical documentation of individual components of the library. To better illustrate some concepts, examples and code demonstrations are included.
 
-All of the presented examples are included in the attached library distribution package. To ensure that the mentioned results can be replicated, all instances of genetic algorithms use seeded entropy generators.
+The overall architecture of the library is based on generics and object polymorphism. Since the library offers object definitions as well as their implementation, it often defines Swift \textit{protocols} (similar to interfaces in other programming languages) or \textit{abstract classes}\footnote{In conventional programming languages, abstract classes contain unimplemented method definitions. Since Swift does not support this paradigm, it is emulated through the mechanism of static precondition failures.}, which are implemented by some of its objects. The purpose of this approach is to offer users a selection of ready-to-use building blocks as well as the option of customization, which is useful in certain cases.
 
-\section{MAX-ONE Problem}~\label{section:maxone}
-The first example is a very trivial problem. It is defined as follows: \textit{Given all bit strings of length between 10 and 100 characters, find the string which maximizes the number of ones.} Although the optimal solution is clearly a string of 100 ones, the simplicity of the problem is ideally suited for a demonstration of the individual components of the library.
+The following sections define the object types representing chromosome data structures (Section~\ref{section:chromosomes}), population evaluators (Section~\ref{section:evaluation}), genetic operators (Section~\ref{section:genetic-operators}), selection objects (Section~\ref{section:selection}), termination conditions and event handlers (Section~\ref{section:execution}) and extensions (Section~\ref{section:extensions}).
 
-The following sections contain a definition of the chromosome data structure and the fitness function for the MAX-ONE problem (Section~\ref{section:maxone-chromosome}), a declaration of the GA itself (Section~\ref{section:maxone-algorithm}) and the results of the algorithm (Section~\ref{section:maxone-results}).
-
-\subsection{Chromosome and Fitness}~\label{section:maxone-chromosome}
-The domain space is a finite set. Its points can be characterized as range-initialized arrays of Boolean values with the initialization interval $[10;100]$, which is declared analogically to the array used in solving the Knapsack Problem (see Listing \ref{listing:array-knapsack}). Since range-initialized arrays already support basic genetic operators, they can be used as chromosomes in the GA.
-
-To evaluate and compare the quality of chromosomes, a fitness function is required. For the purposes of this simple example, the fitness function can be defined as
-~
-\begin{align}
-	f(s_1, s_2, \dots, s_{n}) = \frac{1}{100}\sum_{i=1}^{n} s_i
-\end{align}
-~
-where $\{s_i\}_{i=1}^{n}$ are the bits and $n\in[10;100]$ is the length of the chromosome. A simple implementation of a sequential evaluator using this function is shown in Listing \ref{listing:evaluator-sequential-maxone}.
-
-\begin{listing}[ht]
-	\inputswift{evaluator-sequential-maxone}
-	\caption{Example of a sequential evaluator for the MAX-ONE Problem.}
-	\label{listing:evaluator-sequential-maxone}
-\end{listing}
-
-\subsection{Algorithm}~\label{section:maxone-algorithm}
-With both the chromosome data structure and the fitness function defined, the only remaining step is to declare and configure the instance of the GA before a run can be started. 
-
-\begin{listing}[ht]
-	\inputswift{algorithm-maxone}
-	\caption{Example of the GA definition for the MAX-ONE Problem.}
-	\label{listing:algorithm-maxone}
-\end{listing}
-
-To clearly explain the syntax of the \texttt{GeneticAlgorithm<T>} class initializer, the algorithm shown in Listing \ref{listing:algorithm-maxone} has the following properties:
-~
-\begin{itemize}
-	\item The number of individuals in every generation is 200.
-	\item Elitism is used to preserve the best chromosome.
-	\item The algorithm terminates after 1000 iterations or after the highest fitness value reaches 1.0.
-	\item The $\beta$-tree contains a single chance node:
-	~
-	\begin{itemize}
-		\item With the probability 0.5, apply the reproduction operator on a random individual.
-		\item With the probability 0.3, apply the mutation operator on an individual selected by the roulette selection.
-		\item With the probability 0.2, apply the one-point crossover operator on the winners of two randomized tournaments, each containing five contestants.
-	\end{itemize}
-\end{itemize}
-
-\subsection{Results}~\label{section:maxone-results}
-When executed, the presented algorithm performs 757~iterations before reaching the best fitness value~1.0 and yielding the optimal solution consisting of 100~ones. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 5.6~seconds.
-
-To further increase its speed, it is possible to utilize parallelization of fitness evaluation as described in Section \ref{section:parallel-evaluators}. By substituting the line no. 13 of Listing \ref{listing:algorithm-maxone} with \mintinline{swift}{ParallelEvaluator() { _ in MaxOneEvaluator() }}, the library creates a separate evaluator instance for every CPU core, instead of sharing a single instance among all cores.
-
-After this modification, the number of performed iterations remains the same, however, the total execution time decreases to 4.2~seconds. Note even though the experimental computer has 8 core CPU, such a small decrease in evaluation time is acceptable due to the fact that the only parallelized part of the algorithm is the evaluation of the fitness function, which in this particular case does not represent a significant portion of the processing time. The convergence of fitness values is plotted in Figure \ref{fig:maxone-fitness}.
-
-\begin{figure}[ht]
-	\centering
-	\begin{tikzpicture}
-		\begin{axis}[
-			height=9cm,
-			width=0.9\textwidth,
-			grid=major,
-			xlabel={Generation},
-			ylabel={Fitness},
-			ymin=0, ymax=1,
-			xmin=1, xmax=757,
-			no markers,
-			legend pos=south east
-		]
-			
-		\addplot table {data/maxone-fitness-best.dat};
-		\addlegendentry{Best fitness}
-
-		\addplot table {data/maxone-fitness-average.dat};
-		\addlegendentry{Average fitness}
-
-		\end{axis}
-	\end{tikzpicture}
-	\caption[MAX-ONE genetic algorithm fitness convergence chart.]{Fitness convergence chart of the GA from Listing \ref{listing:algorithm-maxone}.}
-	\label{fig:maxone-fitness}
-\end{figure}
-
-\section{Self-driving Car Simulation}~\label{section:self-driving-car}
-The second example can be considered slightly more complex and closer to practical applications than the MAX-ONE Problem. Suppose that there is a robot car capable of navigating in a simulated two-dimensional environment (illustrated by Figure \ref{fig:self-driving-car}) which contains a closed curve resembling a \textit{race track}. The objective is to find a way to steer the car, so that it discovers the track and follows its contour. In real-world applications, this objective would be an analogy to keeping a car or a car-like drone within the bounds of a marked road.
-
-\begin{figure}[ht]
-	\centering
-	\begin{tikzpicture}[framed,background rectangle/.style={draw,fill=black!60!green}]
-		\draw[
-		  black!10!white,
-		  line width=3mm,
-		  postaction={
-		    decorate,
-		    decoration={
-		      markings,
-		      mark=between positions 0 and 1 step 0.2 with
-		      {
-		        \node[transform shape] {\includegraphics[width=.5cm]{img/car}};
-		      }
-		    }
-		  }
-		]
-		(0,0) to[out angle=0,in angle=180,curve through={(1,.4) .. (5,0) .. (10,.5) .. (7,4.3) .. (3,4) .. (1,2)}] (0,0);
-	\end{tikzpicture}
-	\caption{Illustration of the self-driving car simulation environment.}
-	\label{fig:self-driving-car}
-\end{figure}
-
-The simulated car is controlled by two parameters: the \textit{steering} and the \textit{acceleration}. Modelled after physical driving control systems like the steering wheel and the accelerator pedal, changes in these parameters cannot influence the heading and the velocity of the car directly. Instead, the control parameters affect car's heading and velocity gradually with respect to the time, behaving more like their first derivatives.
-
-An event loop operates in the simulated environment, evaluating all variables periodically with a sufficient\footnote{For the experiments, the frequency of the event loop has been set to 40 Hz.} frequency. This event loop is responsible for periodically altering the position of the car with respect to its instantaneous velocity and recalculating the instantaneous velocity with respect to the latest value of the acceleration control parameter. A similar process serves to adjust the heading of the car. However, while the acceleration is a continuous decimal parameter with values chosen within a set interval, the steering parameter is fundamentally different, being a discrete choice between set values:
-~
-\begin{description}
-	\item[Hard left]
-	Alter heading by $+\frac{1}{2}\pi$ radians with respect to the driver's viewport.
-
-	\item[Left]
-	Alter heading by $+\frac{1}{4}\pi$ radians with respect to the driver's viewport.
-
-	\item[Neutral]
-	Maintain current heading.
-
-	\item[Right]
-	Alter heading by $-\frac{1}{4}\pi$ radians with respect to the driver's viewport.
-
-	\item[Hard right]
-	Alter heading by $-\frac{1}{2}\pi$ radians with respect to the driver's viewport.
-\end{description}
-
-To recognize the race track in the environment, the robotic car is equipped with a set of simulated real-time detectors, which are positioned in a way to approximate the viewport of a real car driver. There are three detectors located in front of the car, one under the car and one behind it. All detectors are capable of producing Boolean values, signifying whether the track is located on their exact position at the time of measurement. This configuration approximates thresholding techniques frequently used in detectors of real self-driving car prototypes.
-
-In all simulations, the environment has square shape with the side equal to 10 kilometers. If at any point throughout the simulation the center of the car leaves the bounds of the environment, the simulation terminates. The simulation also ends if set maximum duration is exceeded. The simulated properties of the car (such as dimensions, maximum acceleration, etc.) mimic\footnote{The simulation limits the acceleration and the instantaneous velocity of the car to match the capabilities of its real-world equivalent. However, it is worth noting that the restrictions are exerted unrealistically by clamping numerical values.} those of \textit{Audi R8 5.2 V10 FSI Quattro (model 2010)}.
-
-The race track is non-deterministically generated at the beginning of the simulation. First, 30 to 50 points are chosen within the environment at random. These points are in fact selected from a slightly smaller padded rectangle within the environment bounds in order to prevent the generated track from accidentally leading the car to the edges of the environment. In the next step, the convex hull of the selected set of points is calculated by the Melkman Algorithm. \cite{MelkmanConvexHull} The points of the convex hull are transformed to a Bézier curve by simple interpolation utilizing cubic Catmull-Rom splines. \cite{CatmullRomSplines} Lastly, the thickness of the track curve is increased to 5 meters in order to improve tolerance in subsequent hit-testing.
-
-In the following sections, the control program of the car (Section~\ref{section:car-control-program}), the chromosome data structure and the fitness function (Section~\ref{section:car-chromosome}) are defined. The GA is described in Section~\ref{section:car-algorithm} and its results are discussed in Section~\ref{section:car-results}.
-
-\subsection{Control Program}~\label{section:car-control-program}
-The control program of the car is a dedicated real-time software, which periodically interacts with the event loop of the environment in order to determine the values of control parameters based on the outputs of the on-board detectors.
-
-To demonstrate how the presented library can be used in conjunction with other Swift components, it was decided that the car is to be controlled by a three-layer feedforward neural network with common sigmoid activation function (for definition, see Section \ref{section:neural-networks}). The input layer of the network is comprised of 5 nodes corresponding to binary read-outs of the on-board detectors, the hidden layer contains 10 nodes and the output layer contains 2 nodes which correspond to the control parameters of the car.
-
-While the acceleration parameter is directly equal\footnote{The acceleration parameter is artificially limited to better approximate physical limitations of the car.} to the output of its respective node, the steering parameter uses thresholds to determine the change in heading.
-
-\subsection{Chromosome and Fitness}~\label{section:car-chromosome}
-It is possible to encode the neural network described in the previous section as a real vector from $d$-dimensional space, where $d$ denotes the number of interunit connections and the components of the vector correspond to weight coefficients of such connections. By assuming that all connections between nodes from consecutive layers exist (substituting the weight 0 for non-existing connections), a fixed length of the vector can be ensured. The neural network can thus be characterized by a range-initialized array of real numbers with the initialization interval $[d;d]$. Accounting for 5, 10 and 2 nodes in the input, hidden and output layer respectively along with the bias parameters, $d=6\cdot 10+11\cdot 2=82$.
-
-To evaluate and compare the quality of control programs, a simple simulated test is performed. Prior to the test, a random race track is generated and positioned within the environment. The car is placed in the center of the simulation with random heading and velocity. Since the race track is a closed curve, the car's initial straight-line trajectory intersects it in at least one point. The control program of the car is expected not to interfere significantly with the steering of the car up to this point. However, after reaching it, the control program should take action to prevent the car from leaving the track.
-
-The described test scenario is executed multiple times, in each instance with different random initial conditions. Throughout every test, various parameters of the car are monitored and recorded by the event loop of the simulation. Every test is terminated if one of two conditions is satisfied:
+\section{Chromosomes}~\label{section:chromosomes}
+In the context of GA, a \textit{chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. \cite{GaPracticalHandbook} Within the library, chromosomes can be represented by any reference types, which conform to the \texttt{ChromosomeType} protocol. This protocol requires them to
 ~
 \begin{enumerate}
-	\item the center point of the car leaves the bounds of the environment, or
-	\item the maximum duration of the simulation (1 hour) is exceeded.
+	\item be immutable,\footnote{This is a semantical requirement implying that every chromosome modification will require a new instance of the type to be created.}
+	\item be capable of randomly generating new instances of themselves.\footnote{This is achieved by requiring conformance to the \texttt{Randomizable} protocol.}
 \end{enumerate}
 
-A crucial parameter for the calculation of fitness values is the \textit{total distance driven over the race track} (denoted $\hat{d}$). Upon initialization, the distance is set to zero. In every iteration of the event loop, the traveled distance $\Delta d$ is calculated from the instantaneous velocity and the event loop frequency. If the detector located in the middle of the car reports contact with the race track, the calculated distance $\Delta d$ is added to $\hat{d}$, otherwise $\hat{d}$ remains unchanged. Clearly, $\hat{d}$ has only nonnegative values. For the purposes of the simulation, $\hat{d}$ has an upper bound in the distance traveled at the highest allowed velocity for the maximum duration of the simulation, which is $d_{max}=199,980$ m/s. At this point, the fitness function can be defined. The fitness function of the control program is evaluated as
+The upcoming sections explain why the choice of a good chromosome data structure is important in GA design (Section~\ref{section:data-representation-problem}), how to achieve common configurations for string-based (Section~\ref{section:strings}) and tree-based (Section~\ref{section:trees}) chromosomes, how to customize them for different applications and how to define custom data types for storing proprietary information (Section~\ref{section:custom-types}.
+
+\subsection{Data Representation Problem}~\label{section:data-representation-problem}
+When designing chromosome data structures, users first need to decide which information should be stored within chromosomes and how should such information be encoded into primitive types. These questions might not always be trivial to answer and it is possible to show that unfortunate choices could potentially impact the rate of convergence of the GA significantly. This is known as \textit{the problem of data representation}.
+
+It is worth noting at this point that the complexity of this problem extends far beyond the scope of this work, and is thus not addressed. For more information on this topic, readers are referred to \cite{GaPracticalHandbook}.
+
+\subsection{Strings}~\label{section:strings}
+A popular method of storing chromosomes is to encode them as strings of values of the same type, e. g. binary or numeric. The library represents such strings in the form of \textit{range-initalized arrays}.
+
+A range-initialized array is a generalization of a regular array. It is a generic list structure, which is capable of holding finite amounts of ordered homogeneous items. However, at the time of initialization, the number of elements in the array is set to a value, which randomly selected from a given number interval. This allows for more flexibility, since in some applications it is desirable to vary not only the contents of the chromosome, but also its size. If this behavior is not wanted, the array can be reconfigured to a constant length by specifying any interval of length zero.
+
+A simple usage of range-initialized arrays can be demonstrated on finding solutions to the Knapsack Problem. Suppose that there are 10 things of different sizes and values and a knapsack of a limited capacity. The objective is to select things in order to maximize the total value of the knapsack contents, while not exceeeding its capacity. Clearly, all solutions of this problem can be described as strings of 10 Boolean values, indicating whether items 1-10 are selected. These values can be stored in a range-initialized array with interval $[10;10]$, implying that the array has fixed size 10. The array class is declared in Listing \ref{listing:array-knapsack}.
+
+\begin{listing}[ht]
+	\inputswift{array-knapsack}
+	\caption{Range-initialized array used to solve the Knapsack problem.}
+	\label{listing:array-knapsack}
+\end{listing}
+
+In a similar way, range-initialized arrays can store integers to encode number sequences or floating-point decimals to describe connection weights of neural networks. Thanks to Swift type extensions, every instance of range-initialized array automatically conforms to the \texttt{ChromosomeType} protocol and supports three basic genetic operators (for definition, see Section \ref{section:genetic-operators}). Range-initialized arrays can thus be directly used as chromosomes in the GA without any further modification.
+
+It is worth noting at this point that strings are \textbf{not designed to hold heterogeneous information}. In spite of that, it is possible to use them for such purpose. For instance, if a chromosome is required to contain numbers as well as bits, it can be encoded as a binary string, portions of which would be later interpreted\footnote{Interpretation can be performed in compliance with any known encoding, e. g. conventional signed encoding, BCD or the Gray code (RBC).} as integers by the application. While this approach succeeds in its purpose, it is strongly discouraged as it may also become a cause to various subsequent problems. For example, when applying genetic operators on the chromosome, the bundled implementation mutates range-initialized arrays by selecting a random element and modifying its value. In conventional situations, this is the desired behavior. However, if the algorithm happens to select an item of the array, which is merely a part of a greater whole (e. g. number), unfortunate modification of such item could cause the chromosome to become undecodable. Instead, the recommended alternative is to use custom types (see Section \ref{section:custom-types}), which not only avoid this issue, but also allow strongly-typed information to be checked at the time of compilation, discovering any possible type conversion errors.
+
+\subsection{Trees}~\label{section:trees}
+Tree structures are commonly used in applications, which require automatic code generation. In such applications, individuals often carry chromosomes which contain control programs, mathematical formulas or similar information that can be represented by tree graphs. The library allows to represent such type of data by a collection of \textit{tree nodes}.
+
+A tree node is an abstract data structure, which can be configured to contain information of any type. In addition, tree nodes can point to multiple other tree nodes, linking the information they contain together, in order to form a forest. The library recognizes two fundamental types of tree nodes:
+~
+\begin{description}
+	\item[Value Nodes (generic)]
+	The purpose of a value node is to produce a value of some kind. While the means of producing the value may differ (e. g. constant, function or binary operation) as well as its type, every value node must offer a way to retrieve its value at runtime. This type of node is represented by the generic class \texttt{ValueNode<T>}.
+
+	\item[Action Nodes]
+	The purpose of an action node is to perform an action at runtime. The action may be a command of some kind, or may call other action, possibly requiring arguments in the form of other value nodes. This type of node is represented by the class \texttt{ActionNode}.
+\end{description}
+
+Both types of nodes are intentionally left abstract, guiding users to define their own node types for functions, operations and commands depending on their applications. This procedure is very simple and can be demonstrated on a maze robot simulation. Suppose that there is a robot, which can receive \texttt{WAIT}, \texttt{GO}, \texttt{STOP}, \texttt{TURN-LEFT} and \texttt{TURN-RIGHT} instructions in order to navigate a 2-dimensional maze. The robot is also capable of determining whether its front side is facing an obstacle. To auto-generate a control program for such robot, its instructions can be formalized as 5 subclasses the class \texttt{ActionNode} and the sensor output can be represented by a subclass of the class \texttt{ValueNode<Bool>}. Such formalization is shown in Listing \ref{listing:tree-maze}.
+
+\begin{listing}[ht]
+	\inputswift{tree-maze}
+	\caption{Example implementation of the GO command action node.}
+	\label{listing:tree-maze}
+\end{listing}
+
+\begin{figure}[ht]
+	\centering
+	\begin{tikzpicture}[sibling distance=10em,
+	  every node/.style = {shape=rectangle, rounded corners,
+	    draw, align=center,
+	    top color=white, bottom color=blue!20}]]
+	  \node {Root:\\\texttt{LoopNode}}
+	    child { node {Termination:\\\texttt{ObstacleSensorNode}} }
+	    child { node {Action:\\\texttt{SequenceNode}}
+	      child { node {\texttt{GoCommandNode}}}
+	      child { node {\texttt{WaitCommandNode}} } };
+	\end{tikzpicture}
+	\caption[Example program for the maze robot simulation.]{Example program for the maze robot simulation, which makes the robot go forward until it encounters an obstacle.}
+	\label{figure:example-program}
+\end{figure}
+
+
+It is conceivable that combinations of various tree nodes can be translated into a language, which is similar to LISP in its architecture (as illustrated in Figure \ref{figure:example-program}). To produce fundamental building blocks of such language, \textit{a tree factory} object is required. Factories create new randomized instances of tree nodes, and can thus restrict or extend types of generated nodes depending on the application. The library contains various bundled node types, ready to use:
+~
+\begin{description} 
+	\item[Constants]
+	Constant nodes (\texttt{ConstantNode<T>}) contain constant values of any type, unchanging during program execution.
+
+	\item[Operations]
+	Operation nodes (descendants of classes \texttt{UnaryOperation<T1,T2>} and \texttt{BinaryOperation<T1,T2,T3>}) are generic templates for functions. Arguments of such functions are represented by other value node instances.
+
+	\item[Comparisons]
+	Comparison nodes represent equality (\texttt{EquationNode<T>}) and inequality predicates (\texttt{ComparisonNode<T>}), operating on tuples of other value node instances.
+
+	\item[Arithmetic and Boolean Operations]
+	For any numeric value nodes, addition, subtraction, multiplication, division and modulation are supported. In analogy, Boolean value nodes support negation, conjunction, disjunction, implication and equivalence.
+
+	\item[Control-flow Primitives]
+	Action nodes can be combined in sequences, loops or simple conditional expressions. Names of the node types responsible for this functionality are analogous to those listed above.
+\end{description}
+
+It is recommended that tree factories are instantiated in the global context, or in subclasses of entropy generators (see Listing \ref{listing:tree-factory}). Apart from controlling the type of generated nodes, factories allow to specify upper bounds of the depth and width of the tree, restricting the number of generated structures.
+
+\begin{listing}[ht]
+	\inputswift{tree-factory}
+	\caption{Tree factory declared in an entropy generator subclass.}
+	\label{listing:tree-factory}
+\end{listing}
+
+\subsection{Custom Types}~\label{section:custom-types}
+If the chromosome information is not compatible with strings or trees, or is heterogeneous in its nature, it is recommended that a custom data type is declared to hold it. This allows users to label, document and describe individual parts of the chromosome, as well as to customize its behavior at important points of evaluation.
+
+Any reference type can become a chromosome data structure, if it conforms to the \texttt{ChromosomeType} protocol (and its inherited protocols). No other protocol conformance is formally required. Nevertheless, it is worth noting that some genetic operators may require chromosomes to conform to other proprietary protocols, in order to operate on them. For instance, the \texttt{Mutable} protocol, which is required by the \texttt{Mutation} operator. For description of such protocols, see Section \ref{section:genetic-operators}.
+
+Declaration of custom types can be demonstrated on The Hamburger Restaurant Problem, mentioned in the introduction\footnote{For the purposes of this work, the example has been slightly altered.} of \cite{Koza1992}. The objective is to find a business strategy for a chain of hamburger restaurants, which yields the biggest profit. A strategy consists of three decisions:
+~
+\begin{description}
+	\item[Price]
+	What should be the price of the hamburger? Should it be 50 cents, 10 dollars or anywhere in between?
+
+	\item[Drink]
+	What drink should be served with the hamburger? Water, cola or wine?
+
+	\item[Speed of service]
+	Should the restaurant provide slow, leisurely service by waiters in tuxedos or fast, snappy service by waiters in white polyester uniforms?
+\end{description}
+
+Clearly, every strategy is a heterogeneous data structure. Although it could be encoded into a binary string as proposed in Section \ref{section:strings}, it is much safer and more elegant to declare a dedicated type to hold its information. Such declaration is shown in Listing \ref{listing:hamburger-sample}.
+
+\begin{listing}[ht]
+	\inputswift{hamburger-sample}
+	\caption{Example declaration of custom chromosome type.}
+	\label{listing:hamburger-sample}
+\end{listing}
+
+Note that in the example declaration, every property is named and strongly-typed, clearing up any possible confusion about their purpose, and preventing type casting issues in the future. Moreover, the custom implementation of the randomization initializer allows users to specify clear bounds for fields, such as the hamburger price. Thanks to Swift generics, fields of type \texttt{Drink} and \texttt{Speed} can also be randomly initialized through the entropy generator, provided that they do conform to the \texttt{Randomizable} protocol. This way, the randomization call is propagated to all fields of the data structure.
+
+Lastly, it is worth mentioning that types which are capable of listing all their possible values in a set of finite cardinality can utilize the \texttt{Discrete} protocol. This protocol functions as a simple time-saving shorthand for the \texttt{Randomizable} protocol, since it produces random values from the discrete uniform distribution of all values in the set. A good demonstration of this is a possible implementation of the \texttt{Drink} type, which is declared as a Swift enumeration in Listing \ref{listing:discrete-sample}.
+
+\begin{listing}[ht]
+	\inputswift{discrete-sample}
+	\caption{Declaration of a chromosome type through a discrete listing of values.}
+	\label{listing:discrete-sample}
+\end{listing}
+
+As shown by the demonstrations, declaration of custom types for heterogeneous chromosomes in Swift is effortless, safe and efficient. However, the reader should not be misled into thinking it only serves for creating nicely annotated vessels for information. This technique can be also used to create more complex genotype containers with customized behavior and proprietary internal structure, which is most notably exemplified by strings and trees, as both types are implemented in this way.
+
+\section{Population Evaluation}~\label{section:evaluation}
+In order to assess and compare the quality of chromosomes with respect to the optimization problem at hand, a common fitness evaluation model is used. In this model, every chromosome is assigned a value from the $[0;1]$ interval by a \textit{fitness function}, which is heavily dependent on the application and thus required to be specified by the user.
+
+The fitness function (denoted $f$) is encapsulated in an \textit{evaluator} object, which is active for the entire duration of evaluation. The purpose of this encapsulation is to enable the possibility of accelerating the evaluation process by minimizing computing overhead needed to set up and tear down other components required to perform the evaluation itself. Since fitness functions often involve resource-expensive simulations and randomized testing scenarios, such optimization may be efficient in some cases.
+
+The following sections explain the data structure which holds the evaluated chromosomes (Section~\ref{section:mating-pool}), the underlying base types of evaluator objects (Section~\ref{section:parallel-evaluators}) and the technique of nesting evaluators in order to perform statistical aggregation (Section~\ref{section:cyclic-evaluators}).
+
+\subsection{Mating Pool}~\label{section:mating-pool}
+In the context of population evaluation, a \textit{mating pool} represents a collection of individuals relevant to the current iteration of the GA. The pool is divided in two parts: the \textit{current generation} and the \textit{offspring}. Evaluators operate only on the first of these two.
+
+Apart from chromosomes, individuals in the mating pool also have an optional field dedicated for their fitness value. When a new individual is inserted into the population, value of this field is not present. However, individuals transitioning between generations carry their previously set fitness with them. In a single iteration of the GA, the fundamental purpose of an evaluator object is to ensure that all individuals in the current generation have a non-null fitness value.
+
+\subsection{Sequential and Parallel Evaluators}~\label{section:parallel-evaluators}
+The library supports two evaluation modes: \textit{sequential} and \textit{parallel}. While the sequential mode is easier to implement but leads to slower evaluation, the parallel mode is faster but requires the internals of the fitness function to be compatible with multi-threaded processing, which may not always be feasible with respect to the problem definition.
+
+To demonstrate implementation of a simple sequential evaluator, recall the chromosome structure, which was proposed earlier\footnote{The Knapsack Problem is defined in Section \ref{section:strings}. For chromosome structure, see Listing \ref{listing:array-knapsack}} for the Knapsack Problem. Suppose the fitness function is defined as
 ~
 \begin{align}
-	f(\hat{d}_1,\hat{d}_2,\dots,\hat{d}_5) = \frac{1}{5 \cdot d_{max}} \sum_{i=1}^5 \hat{d}_i
+	f(c_1, c_2, \dots, c_{10})
+	=
+	\begin{cases} 
+		\hfill 0 \hfill & \text{ if $\sum_{i=1}^{10} c_i s_i>S_{max}$} \\
+		\hfill \sum_{i=1}^{10} c_i v_i / \sum_{i=1}^{10} v_i \hfill & \text{ otherwise} \\
+	\end{cases}
 \end{align}
 ~
-where $\hat{d}_1,\hat{d}_2,\dots,\hat{d}_5$ denote the total distances driven over the race track calculated in tests 1 through 5 respectively. All distances are specified in meters.
-
-Clearly, the presented fitness function favors control programs which manage to keep the car on the track more than programs which do not follow it very well or veer off it eventually. In addition, since the function operates on distances, control programs are motivated to discover the race track as quickly as possible and to maximize the distance traveled over it. An implementation of a sequential evaluator using this function is illustrated in Listing \ref{listing:evaluator-sequential-car}.
+where $S_{max}$ represents the maximum capacity of the knapsack, $\{s_i\}_{i=1}^{10}$ are sizes of things, $\{v_i\}_{i=1}^{10}$ are values of things and $\{c_i\}_{i=1}^{10}$ are 0/1 coefficients generated from the Boolean values of the chromosome. A simple implementation of a sequential evaluator using this function is shown in Listing \ref{listing:evaluator-sequential}.
 
 \begin{listing}[ht]
-	\inputswift{evaluator-sequential-car}
-	\caption{Implementation of the self-driving car evaluator.}
-	\label{listing:evaluator-sequential-car}
+	\inputswift{evaluator-sequential}
+	\caption{Example of a sequential evaluator for the Knapsack Problem.}
+	\label{listing:evaluator-sequential}
 \end{listing}
 
-In the evaluator, the control program along with the neural network itself\footnote{The implementation of the FFNN was provided by the \textit{Swift AI} open-source project, which is available online: \url{https://github.com/collinhundley/Swift-AI}} is encapsulated in an instance of the \texttt{NetDriver} type, which is conformant to the \texttt{CarDriver} protocol that formalizes requirements on automated car controllers (not necessarily only those operating with neural networks). Since the evaluator is fully self-contained, it enables parallelization by \texttt{ParallelEvaluator<T>} which was shown in the last example. To visualize the simulation, the \texttt{CarSimulation} initializer can be called in the \textit{verbose}, which automatically generates a MATLAB script capable of displaying animated plot of the car's position in time.
+In the example, the evaluator is a descendant of the generic abstract class \texttt{SequentialEvaluator<T>}, which is a common base class for all sequential evaluators. Similarly, all parallel evaluators have to be descendants of the class \texttt{ParallelEvaluator<T>}, which instantiates multiple sequential evaluators operating on different threads and manages internal producer-consumer queue to facilitate parallel evaluation of chromosomes. Moreover, both types of evaluators inherit from \texttt{Evaluator<T>}, an abstract class which defines the formal requirements on all evaluator objects.
 
-\subsection{Algorithm}~\label{section:car-algorithm}
-The GA declaration is analogous to that used in the MAX-ONE Problem (see Listing \ref{listing:algorithm-maxone}). The GA has been configured with the following properties:
+When implementing fitness evaluator classes, it is recommended that the class \texttt{Evaluator<T>} is directly subclassed only in cases, when the evaluation scheme is incompatible the other already existing subclasses. A good example of such scenario would be an evaluator utilizing a distributed computing cluster. However, directly subclassing \texttt{Evaluator<T>} only to create a custom implementation of sequential evaluator is not advisable, since \texttt{SequentialEvaluator<T>} is integrated into other components of the library and avoiding its use would introduce subsequent issues.
+
+\subsection{Cyclic Evaluators}~\label{section:cyclic-evaluators}
+Every descendant of the class \texttt{SequentialEvaluator<T>} is eligible to be combined with a \textit{cyclic evaluator} (represented by the class \texttt{CyclicEvaluator<T>}). Instances of cyclic evaluators encapsulate other evaluators, which are called multiple times in order to evaluate a single chromosome. Such sub-evaluations are then statistically aggregated to produce a final fitness value. This procedure mimics a commonly used technique in GA fitness evaluation, which yields more stable and reliable fitness values, especially in randomized simulations.
+
+Usage of cyclic evaluators is straightforward. At the instantiation time, a cyclic evaluator receives 3 parameters: a sequential evaluator, and numbers $n$ and $m$. Upon evaluation of an individual, the sequential evaluator is called $n$ times, producing a vector of $n$ fitness sub-evaluations. From this vector, $m$ of the highest (or the lowest) fitness values are then selected. The final fitness value returned by the cyclic evaluator is the average calculated from the selected values.
+
+\section{Genetic Operators}~\label{section:genetic-operators}
+Genetic operators are procedures, which are performed on collections of individuals during the evaluation of the GA in order to transition between iterations. When operators are applied, the entire mating pool is available to them. While the current generation can be merely accessed for reading, the offspring generation also supports writing. Every operator can thus read an arbitrary number of chromosomes from the current generation, and is expected to insert at least one chromosome into the offspring generation.
+
+The selection of chromosomes is carried out through \textit{selection objects}, which are specified as configuration parameters of individual operators. There are various types of selections, each providing the selection pressure in a different way, thus being suitable for different classes of applications. For the description of supported selection methods, see Section \ref{section:selection}.
+
+The library offers implementation of three common genetic operators: \textit{reproduction} (Section~\ref{section:reproduction}), \textit{mutation} (Section~\ref{section:mutation}) and \textit{crossover} (Section~\ref{section:crossover}). However, users are by no means limited to only these three. Section~\ref{section:custom-operators}) gives details and recommendations on creating custom operators. Lastly, the ways of combining genetic operators into decision trees are described in Section~\ref{section:decision-trees}.
+
+\subsection{Reproduction}~\label{section:reproduction}
+The reproduction operator mimics the asexual reproduction of natural organisms, which have survived long enough to mature. Unlike others, this operator does not introduce any novelty into the offspring generation. Instead, its purpose is to simply stabilize the population by carrying certain traits between generations. This in effect prevents the loss of diversity and thereby avoids premature convergence of the GA, which may lead to a suboptimal solution.
+
+When applied on the population, the reproduction operator copies arbitrary number of selected chromosomes from the current generation to the next one without any modifications. Since the selection of individuals is independent of the operator implementation, it is technically possible to use any selection object with this operator. Nevertheless, it is worth noting that only fitness-proportionate strategies make sense in this context. A good example of such strategies is \textit{elitism}, which is more thoroughly described in Section \ref{section:elitism}.
+
+Since individuals are immutable by definition, the reproduction operator requires their underlying chromosome data structures to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of their instances.
+
+\subsection{Mutation}~\label{section:mutation}
+The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it operates by copying selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The degree of mutation in the chromosomes is static and determined by the implementation. In general, mutated chromosomes can be expected to mostly resemble their original counterparts, yet not be completely identical.
+
+In order to be used in the GA, the mutation operator requires chromosome data structures to conform to the \texttt{Mutable} protocol. Every container can thus have its own, slightly different implementation of mutation, which should be defined in its documentation. General guidelines for implementing mutation are:
 ~
-\begin{itemize}
-	\item The number of individuals in every generation is 200.
-	\item Elitism is used to preserve the best chromosome.
-	\item The algorithm terminates after 100 iterations are performed or after the highest fitness value reaches 1.0.
-	\item The $\beta$-tree contains a single chance node:
-	~
-	\begin{itemize}
-		\item With the probability 0.8, apply the reproduction operator on a random individual.
-		\item With the probability 0.8, apply the mutation operator on an individual selected by the roulette selection.
-		\item With the probability 0.1, apply the one-point crossover operator on the winners of two randomized tournaments, each containing five contestants.
-	\end{itemize}
-\end{itemize}
+\begin{enumerate}
+	\item Select one chromosome in the current generation.
+	\item Choose a ``part'' of the chromosome at random.
+	\item Copy the chromosome, substituting the chosen part for a randomly generated equivalent.
+	\item Insert the modified chromosome into the offspring generation.
+\end{enumerate}
 
-\subsection{Results}~\label{section:car-results}
-When executed, the presented algorithm performs 100~iterations, reaching the best fitness value~0.973. Unlike the MAX-ONE algorithm, the convergence rate of the execution is quite high, possibly hinting at suboptimal solution. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 4,2~hours with the parallelization enabled. The convergence of fitness values is plotted in Figure \ref{fig:car-fitness}.
+Clearly, among various data structures the semantical definition of a ``part'' may differ. For instance, in range-initialized arrays, a part is defined as an item of the array. Since arrays are homogeneous, all their are equivalent by definition. In contrast, a part of a tree node structure is defined as a rooted subtree. Two subtrees are equivalent if the fundamental base classes of their root nodes match.
 
-\begin{figure}[ht]
-	\centering
-	\begin{tikzpicture}
-		\begin{axis}[
-			height=9cm,
-			width=0.9\textwidth,
-			grid=major,
-			xlabel={Generation},
-			ylabel={Fitness},
-			ymin=0, ymax=1,
-			xmin=1, xmax=100,
-			no markers,
-			legend pos=south east
-		]
-			
-		\addplot table {data/car-fitness-best.dat};
-		\addlegendentry{Best fitness}
+\subsection{Crossover}~\label{section:crossover}
+The crossover operator emulates the act of sexual reproduction of individuals in the nature (also known as \textit{recombination}). Unlike the previous two operators, it requires the input of exactly two chromosomes from the current generation, which are referred to as \textit{the parent chromosomes}. During the execution of the operator, parts of the parent chromosomes are randomly chosen and exchanged, producing two new chromosomes, which are inserted into the offspring generation. These chromosomes carry a mixture of traits of the parent chromosomes, and can therefore be thought of as their \textit{children}.
 
-		\addplot table {data/car-fitness-average.dat};
-		\addlegendentry{Average fitness}
+Similarly to the mutation operator, in order for the crossover to be used with chromosomes, their underlying data structure must conform to a dedicated Swift protocol, which allows users to customize the behavior of the operator with respect to the architecture of the data structure. The general guidelines for implementing such customizations are:
+~
+\begin{enumerate}
+	\item Select two distinct chromosomes in the current generation.
+	\item Choose pairs of ``parts'' of the chromosomes at random.
+	\item Copy both chromosomes, swapping the parts in each pair.
+	\item Insert the modified chromosomes into the offspring generation.
+\end{enumerate}
 
-		\end{axis}
-	\end{tikzpicture}
-	\caption{Fitness convergence chart of the self-driving car GA.}
-	\label{fig:car-fitness}
-\end{figure}
+Depending on the number and size of interchanged parts, multiple classes of crossover operators\footnote{Each crossover operator has a dedicated Swift protocol.} can be defined. For arrays and range-initialized arrays, two crossovers are implemented:
+~
+\begin{description}
+	\item[One-point crossover]
+	A single point is randomly chosen to divide both arrays in two parts. While the first pair of parts is kept at its original position, the second pair is swapped. This crossover is represented by the protocol \texttt{OnePointCrossoverable}.
 
-\section{Artificial QWOP Player}~\label{section:qwop-player}
-The third and final usage demonstration of the presented library is closely related to genetic programming techniques shown in \cite{EvolvingQwopGaits}.
+	\item[Two-point crossover]
+	In analogous way to the one-point crossover, two points are randomly chosen to divide both arrays in three parts. The middle pair of parts is swapped between the chromosomes, whereas the remaining two pairs are left unmodified. This crossover is represented by the protocol \texttt{TwoPointCrossoverable}.
+\end{description}
 
-In the cited literature, researchers describe their attempts at training artificial programs in playing an online computer game, achieving scores comparable to or exceeding those of human players. This section is dedicated to replicating parts of their results.
+For tree node structures, crossover is implemented by selecting two random subtrees rooted in nodes, which are descendants of matching fundamental base classes. The execution of the operator is performed by swapping pointers to both subtrees. This crossover is represented by the protocol \texttt{TreeCrossoverable}.
 
-In the following sections, the QWOP game is described in detail (Section~\ref{section:qwop-description}) as well as the previous works related to it (Section~\ref{section:qwop-previous-work}). Section~\ref{section:qwop-interface} gives details on the technical caveats of interfacing an existing Java application with the GA programmed in Swift. Lastly, the GA is defined (Section~\ref{section:qwop-algorithm}) and its results are discussed (Section~\ref{section:qwop-results}).
+%todo: implementovat tree crossover
 
-\subsection{The QWOP Game}~\label{section:qwop-description}
-QWOP (shown in Figure \ref{figure:QWOP}) is a popular online game, available for free at Foddy.net \cite{QwopWebsite}. In the game, the player controls movements of an Olympic athlete during a sprint race. The objective is to reach the longest possible distance, terminating at the 100-meter mark. If at any point throughout the race, the head or any of the hands of the athlete come into contact with the ground, the athlete loses his balance, falls and the game is over. The control scheme of QWOP is very simple. By pressing keys Q, W, O, P on the keyboard (hence the name of the game), the player controls movements of different muscle groups within the athlete's body. Keys Q and W move forward the left and the right thighs and keys O and P move backward the left and the right calves respectively.
+\subsection{Custom Operators}~\label{section:custom-operators}
+By creating descendants of the generic abstract class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any genetic operators of their own. This section gives details and recommendations on implementing such subclasses.
 
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.8\textwidth]{img/qwop.png}
-	\caption[The QWOP online game.]{The QWOP online game. \cite{QwopWebsite}}
-	\label{figure:QWOP}
-\end{figure}
-
-In spite of the simplicity of the game goals and its straightforward control scheme, QWOP is well-known for its notorious difficulty. This is mainly due to its ``ragdoll physics'' engine, which heavily oversimplifies the mechanics of the simulated runner to the point where certain behaviors might seem unintuitive or even unpredictable. \cite{QwopHomework} The biggest challenge of the game can be described as to devise a repeatable strategy to achieve and maintain precise synchronization of key presses, receiving only limited sensory feedback from the game.
-
-\subsection{Previous Work}~\label{section:qwop-previous-work}
-QWOP has been previously mentioned in several publications, mostly in relation to machine learning. The challenge of the game has been subject of study primarily because of its appearent similarity to the problem of evolving bipedal gaits in physical robots and other cybernetic applications.
-
-To describe QWOP strategies, the authors of \cite{EvolvingQwopGaits} have used string encodings. Since one of these encodings is used\footnote{The used encoding is the \textit{Encoding 1}, which was originally proposed by \cite{QwopEncoding}.} in this demonstration, its definition is included in this section. The encoded strings represent sequences of instructions to the player without any regards to the state of the game. The encoding uses symbols ``\texttt{q,Q,w,W,o,O,p,P,+}''. A capital letter represents pressing the corresponding key on the keyboard, a lowercase letter represents a key release. The ``\texttt{+}'' symbol stands for a delay in which the current state of inputs is maintained for 150 milliseconds. \cite{EvolvingQwopGaits}
-
-Upon interpretation, the encoded string is read from the left to the right, executing one instruction at a time. When the end of the string is reached, the interpretation starts again from the beginning. An example of a strategy encoded in this way is shown in Listing \ref{listing:encoding-example}.
+The base class contains a selection object and an initializer method, which is used to configure the selection at the time of creation. This initializer must be called from any descendants as it is crucial to operator execution later on. The internal logic of the operator is controlled by the abstract method \texttt{apply()}, which receives a mating pool and an entropy generator object. In this method, the operator is expected to call the selection object exactly once and provide it with both mentioned objects as well as the number of individuals needed for its execution. The selection then returns a list of the selected indices, which can be used to access the objects of individuals containing chromosome data and fitness evaluations. To further illustrate this approach, an example of a custom operator implementation is shown in Listing \ref{listing:custom-operator}.
 
 \begin{listing}[ht]
-	\begin{minted}[frame=lines,
-               framesep=2mm,
-               fontsize=\small]{text}
-QO+qPW+wpo+QPW+wO+qp+P+Q+++qp+QPW+wo+qp+POQ+q+W+Qp+qwo
-	\end{minted}
-	\caption[Example encoded QWOP game strategy.]{Example encoded QWOP game strategy, which translates to \textit{``Press Q and O, hold them for 150ms, release Q, press P and W, hold for 150ms, release W, P and O, wait...''} \cite{EvolvingQwopGaits}}
-	\label{listing:encoding-example}
+	\inputswift{custom-operator}
+	\caption{Example of a custom genetic operator implementation.}
+	\label{listing:custom-operator}
 \end{listing}
 
-To consistently interpret QWOP strategies encoded into strings, the authors of \cite{EvolvingQwopGaits} have used automated Java program called the \textit{Qwopper}, which has been originally developed by \cite{QwopEncoding}. The application is comprised of three components:
-~
-\begin{description}
-	\item[Strategy interpretter]
-	The interpretter is responsible for creating artificial user inputs for the QWOP game in compliance with a given strategy string.
-
-	\item[Control interface]
-	The control interface is a user application, which serves users to configure and test the interpretter.
-
-	\item[GA engine]
-	By default, Qwopper includes its own implementation of the GA, which has been used to produce strings by means of genetic programming.
-\end{description}
-
-Apart from blindly simulating user inputs, the interpretter component of Qwopper includes a basic OCR algorithm (illustrated in Figure \ref{figure:QWOP-OCR}), which is capable of determining the current state of the game (\textit{running} or \textit{paused}) and reading the distance traveled by the athlete. Combining this information with the duration of the run, Qwopper can periodically estimate the instantaneous velocity of the runner achieved by a given strategy.
-
-\begin{figure}[ht]
-	\centering
-	\includegraphics[width=0.5\textwidth]{img/reading_digits.png}
-	\caption[OCR process used by the Qwopper software.]{Illustration of the OCR process used by the Qwopper software. \cite{QwopEncoding}}
-	\label{figure:QWOP-OCR}
-\end{figure}
-
-It is worth noting at this point that Qwopper already has all necessary components to generate, evaluate and recombine QWOP strategy strings on its own. However, for the purpose of demonstration of the GA provided by the presented library, its functions are reduced to only serve as a strategy string evaluation tool.
-
-\subsection{Interfacing Qwopper with Swift}~\label{section:qwop-interface}
-The encoding defined in the previous section can be simply used in a chromosome data structure. By the use of Swift enumerations and the conformance to the \texttt{Discrete} protocol (for usage example, see Listing \ref{listing:discrete-sample}), QWOP game strategies can be stored in a range-initialized array with the initialization interval $[1;200]$.
-
-To efficiently evaluate different game strategies, it is imperative that the Qwopper application is capable of communicating with the GA implemented in Swift. For that reason, the main interface of Qwopper has been altered to serve this purpose. Upon execution, the modified version of Qwopper receives three shell parameters:
-~
-\begin{description}
-	\item[Strategy string]
-	The strategy to evaluate. For example, see Listing \ref{listing:encoding-example}.
-
-	\item[Number of attempts]
-	How many times should the runs be repeated.
-
-	\item[Maximum duration]
-	The maximum duration of a single run in milliseconds.
-\end{description}
-
-After parsing the input, the application finds an open game window and attempts to play the game, following the instructions in the strategy string. When the athlete falls or the set maximum duration is exceeded, the application prints information about the run to the standard output and starts another run (or terminates). The monitored information includes:
-~
-\begin{description}
-	\item[Result]
-	A Boolean flag signifying whether the athlete has fallen in the run.
-
-	\item[Duration]
-	Duration of the run in milliseconds.
-
-	\item[Distance]
-	Distance achieved by the athlete in meters.
-\end{description}
-
-In the evaluation of the GA, the execution of Qwopper is represented by a \texttt{QwopEvaluator} object, which is a subclass of the \texttt{SequentialEvaluator<T>} type. This object is responsible for executing the application with correct parameters and reading its outputs, from which the value of the fitness function is calculated. The fitness function of a QWOP strategy is defined as
-~
-\begin{align}
-	f(d_1,d_2,\dots,d_n) = \frac{1}{n \cdot d_{max}} \sum_{i=1}^n d_i
-\end{align}
-~
-where $d_1,d_2,\dots,d_n$ denote the distances run by the athlete in $n$ individual attempts at executing the strategy by Qwopper. The value $d_{max}=100$ is the maximum achievable distance of a single run. All distances are specified in meters. Since multiple active instances of Qwopper could interfere with each other, instances of the \texttt{QwopEvaluator} type do not support parallelization of fitness evaluation shown in the previous demonstrations.
-
-\subsection{Algorithm}~\label{section:qwop-algorithm}
-Due to the time-consuming nature of fitness evaluation and the lack of parallelization options, the GA for the QWOP runner training has been configured with the following parameters:
-~
-\begin{itemize}
-	\item The number of individuals in every generation is 80.
-	\item Elitism is used to preserve the best chromosome.
-	\item The algorithm terminates after 18 hours of execution or after the highest fitness value reaches 0.8.
-	\item In the evaluation of a single strategy, Qwopper attempts 1 run with the maximum duration of 30 seconds.
-	\item The $\beta$-tree contains a single chance node:
-	~
-	\begin{itemize}
-		\item With the probability 0.5, apply the reproduction operator on a random individual.
-		\item With the probability 0.3, apply the mutation operator on an individual selected by the roulette selection.
-		\item With the probability 0.2, apply the one-point crossover operator on the winners of two randomized tournaments, each containing five contestants.
-	\end{itemize}
-\end{itemize}
-
-\subsection{Results}~\label{section:qwop-results}
-When executed, the presented algorithm performs 38~iterations, reaching the best fitness value~0.224. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 18~hours. The convergence of fitness values is plotted in Figure \ref{fig:qwop-fitness}.
-
-\begin{figure}[ht]
-	\centering
-	\begin{tikzpicture}
-		\begin{axis}[
-			height=9cm,
-			width=0.9\textwidth,
-			grid=major,
-			xlabel={Generation},
-			ylabel={Fitness},
-			ymin=0, ymax=0.4,
-			xmin=1, xmax=38,
-			no markers,
-			legend pos=north east,
-			ytick={0.1,0.2,...,0.4}
-		]
-			
-		\addplot table {data/qwop-fitness-best.dat};
-		\addlegendentry{Best fitness}
-
-		\addplot table {data/qwop-fitness-average.dat};
-		\addlegendentry{Average fitness}
-
-		\end{axis}
-	\end{tikzpicture}
-	\caption{Fitness convergence chart of the QWOP GA.}
-	\label{fig:qwop-fitness}
-\end{figure}
-
-The best strategy of the last generation (shown in Listing \ref{listing:best-strategy}) was capable of controlling the athlete successfully, finishing the 100-meter race in approximately 152 seconds. This result is comparable with those presented in \cite{EvolvingQwopGaits}, where the authors state that one of the best-evolved gaits which used the same encoding achieved the same distance in ``about 2 minutes.''
+It is strongly recommended that genetic operators exert no additional selection logic on top of the results returned by the selection object. Instead, such logic is recommended to be resolved by creating custom selection objects, which are capable of encapsulating other selection objects. If required, this technique can be applied in the operator initializer, forcing all selections to undergo such encapsulation, as shown in Listing \ref{listing:selection-encapsulation}.
 
 \begin{listing}[ht]
-	\begin{minted}[frame=lines,
-               framesep=2mm,
-               fontsize=\small]{text}
-oQqpqQWWPqQqWoOwqOqoPpQOwPWo+oowOqWqwWqwOp+qoPOwpoWWOQwowqW+WOP+qqwpo+Qq
-wpqPwp
-	\end{minted}
-	\caption[The best discovered QWOP game strategy.]{The best discovered QWOP game strategy (fitness 0.224).}
-	\label{listing:best-strategy}
+	\inputswift{selection-encapsulation}
+	\caption{Example of a selection object encapsulation.}
+	\label{listing:selection-encapsulation}
 \end{listing}
+
+In order to better work on the chromosome data structures, genetic operators can also define custom protocols, to which such structures can conform. By usage of Swift extensions, existing structures can be then altered to comply with any additional requirements specified by these protocols.
+
+\subsection{Decision Trees}~\label{section:decision-trees}
+Decision trees are used to describe the sequential application of operators in the GA. The library includes Swift syntax extensions to facilitate simple customization of such operator sequences. Two types of nodes are supported:
+~
+\begin{description}
+	\item[Operator nodes]
+	Operator nodes correspond to instances of application of genetic operators.
+
+	\item[Chance nodes]
+	Chance nodes contain non-deterministic switches between multiple choices. Every choice specifies its probability and a decision subtree to execute, should it be selected.
+\end{description}
+
+To ease their usage, decision trees are defined by custom Swift operators. In order to concatenate tree nodes in a sequence, the three-dash arrow operator (e.g. \texttt{--->}) is used. Sequences produced by this operator resemble linked lists in their structure. The three-bar operator (e.g. \texttt{|||}) serves to determine choices in chance nodes. The syntax of both operators is illustrated by Listing \ref{listing:decision-tree-definition}.
+
+\begin{listing}[ht]
+	\inputswift{pipeline-definition}
+	\caption{Example of decision tree definition.}
+	\label{listing:decision-tree-definition}
+\end{listing}
+
+\section{Selections}~\label{section:selection}
+The purpose of selection objects is to separate the methods of chromosome selection from the genetic operators. This approach allows users to easily combine operators with selection methods without the need for unnecessary subclassing.
+
+As input, selection objects receive three parameters from their genetic operators: the current generation (together with fitness evaluations), an entropy generator and the number of requested chromosomes. In return, selection objects are expected to produce a list of indices of the selected chromosomes or fail with error should the population contain insufficient number of chromosomes. When accessing fitness evaluations, the library uses lazy-loading optimizations, in order to prevent unnecessary sorting and data aggregation. For that reason, selection objects are not required to specify fitness-related dependencies. Instead, additional calculations are performed on the first instance when the information is required.
+
+Similarly to genetic operators, the library offers the implementation of common selections: \textit{roulette selection} (Section~\ref{section:roulette-selection}), \textit{rank selection} (Section~\ref{section:rank-selection}), \textit{tournament selection} (Section~\ref{section:tournament-selection}) and several others (Section~\ref{section:miscellaneous}). In addition, the library allows its users to customize the behavior of selections, possibly creating their own subclasses (Section~\ref{section:custom-selection}).
+
+\subsection{Roulette Selection}~\label{section:roulette-selection}
+Roulette selection is one of the most basic fitness-proportionate selection methods used in the GA. When applied, each chromosome is assigned a normalized probability proportional to its current fitness value. Based on the assigned probabilities, a random generator then selects chromosomes from a discrete non-uniform distribution. This process can be likened to a spin of unfair roulette wheel, where every chromosome is allocated a sector with angle proportional to its fitness. \cite{GaConceptsDesigns}
+
+The application of this method can be shown on a simple example. Suppose that there are four chromosomes with fitness values 0.05, 0.4, 0.8 and 0.1. In order to generate a distribution, the roulette selection method merely normalizes fitness values to sum up to 1. Chromosomes are therefore assigned probabilities 0.04, 0.3, 0.59 and 0.07 respectively.
+
+In the library, roulette selection is represented by the \texttt{RouletteSelection} class, which has no arguments and can be combined with any genetic operator.
+
+\subsection{Rank Selection}~\label{section:rank-selection}
+Rank selection is a modification of the roulette selection method, which is better suited for cases with extreme differences in fitness values. In such situations, often a small group of fit chromosomes receives the majority of the roulette wheel, causing the rest of the population to be mostly neglected, thus leading to premature convergence of the GA.
+
+To resolve these cases, rank selection first sorts all chromosomes by their current fitness values. Every chromosome is then assigned a probability proportional to its rank in the sequence (hence the name of the method). For example, if rank selection had been used instead of roulette, the chromosomes in the example from the previous section would be assigned ranks 1, 3, 4, 2 respectively. These ranks would be simply normalized to probabilities 0.1, 0.3, 0.4 and 0.2.
+
+In the library, rank selection is represented by the \texttt{RankSelection} class, which has no arguments and can be combined with any genetic operator.
+
+\subsection{Tournament Selection}~\label{section:tournament-selection}
+Tournament selection provides selection pressure by holding a tournament among $s$ competitors, with $s$ being the tournament size (or order). The winner of the tournament is the chromosome with the highest fitness of the $s$ tournament competitors. \cite{GaTournamentSelection}
+
+The library contains implementation of tournament selection, where competitors are chosen from the population by another selection object. By default, this secondary selection is random. However, by changing this argument, users can customize the behavior of the tournament selection significantly.
+
+This selection method is represented by the \texttt{TournamentSelection} class, which receives the value of parameter $s$ and the secondary selection object upon instantiation, and can be combined with any genetic operator.
+
+\subsection{Miscellaneous}~\label{section:miscellaneous}
+In addition to the three methods described in previous sections, the library contains implementation of primitive selection objects, which serve as utilities for other selections or operators:
+~
+\begin{description}
+	\item[Random selection]
+	This method selects chromosomes at random with no regards to their fitness values. It is represented by the \texttt{RandomSelection} class, which has no arguments and can be combined with any genetic operator.
+
+	\item[Best selection]
+	This method deterministically selects chromosomes in the descending order of fitness values. It is represented by the \texttt{BestSelection} class, which has no arguments and can be combined with any genetic operator.
+
+	\item[Worst selection]	
+	This method deterministically selects chromosomes in the ascending order of fitness values. It is represented by the \texttt{WorstSelection} class, which has no arguments and can be combined with any genetic operator.
+\end{description}
+
+\subsection{Custom Selections}~\label{section:custom-selection}
+To create a selection object for a custom selection method, users need to subclass the generic class \texttt{Selection<T>}.
+
+The internal logic of any selection object is contained within the implementation of the abstract function \texttt{select()}. This function receives an entropy generator, a population, which serves as the domain for the selection, and the requested number of chromosomes to select. The expected output of the method is a set of zero-based indices pointing to the requested number of selected chromosomes in the population, which are not required to be distinct.
+
+In the implementation of the method, users are free to assume that the fitness evaluation of all chromosomes is available.  Moreover, it possible to declare additional parameters or secondary selection objects during instantiation. If necessary, selection objects can also declare auxiliary protocols for chromosome types, in order to better integrate with their contents. A basic implementation of a custom selection object is shown in Listing \ref{listing:custom-selection}.
+
+\begin{listing}[ht]
+	\inputswift{custom-selection}
+	\caption{Example of custom selection implementation.}
+	\label{listing:custom-selection}
+\end{listing}
+
+\section{Execution}~\label{section:execution}
+The library provides a simple interface for definition and configuration of the GA through the class \texttt{GeneticAlgorithm<T>}. In instances of this class, various components of the library come together to form a robust runtime environment for the execution of GA.
+
+To configure the environment, the following parameters are required:
+~
+\begin{description}
+	\item[Population size]
+	The desired number of individuals in every generation of the mating pool. Since the number of individuals produced by genetic operators is not defined, the actual number of generated individuals may differ. In such cases, the value of this parameter serves as a lower bound to the actual value.
+
+	\item[Decision Trees]
+	The GA allows two decision trees to be specified. For reasons of clarity, these trees are labeled $\alpha$ and $\beta$. While the $\alpha$-tree is executed repeatedly at the beginning of every iteration of the GA, the $\beta$-tree is executed multiple times per iteration in order to populate the offspring generation. For more information, see Section~\ref{section:decision-trees}.
+
+	\item[Evaluator]
+	The evaluator object is instantiated for the entire duration of the execution of the GA. It receives requests to evaluate individuals in every iteration. For more information, see Section~\ref{section:evaluation}.
+
+	\item[Termination condition]
+	At the end of every iteration, the termination object is called to determine whether the GA should continue execution or terminate. For more information, see Section \ref{section:termination-conditions}.
+
+	\item[Entropy generator]
+	This object provides sequences of pseudorandom numbers used for non-deterministic parts of the GA. For more information, see Section \ref{section:entropy-generators}.
+\end{description}
+
+Once all dependencies are initialized, the GA is ready to commence execution. In this context, a single instance of execution is referred to as a \textit{run}. Runs are executed synchronously\footnote{Beware, the thread which calls the \texttt{run()} method is suspended until the execution finishes.} and are comprised of multiple iterations, depending on the termination condition. Each iteration consists of the following steps:
+~
+\begin{enumerate}
+	\item Ensure that all individuals in the current generation are evaluated.
+	\item Execute the $\alpha$-tree once.
+	\item Reset the offspring generation.
+	\item Execute the $\beta$-tree repeatedly until the offspring generation size is sufficient.
+	\item Replace the current generation with the offspring.
+\end{enumerate}
+
+\subsection{Termination Conditions}~\label{section:termination-conditions}
+Termination objects are descendants of the class \texttt{TerminationCondition<T>}. Their instances encapsulate Boolean functions, which determine whether the GA should terminate its execution upon the end of every iteration.
+
+Objects provided by the library can be divided into two groups: the \textit{primitives} and the \textit{contractions}. The purpose of this division is to allow users to formulate complex termination conditions by combining primitives with the help of contractions. The supported primitives are:
+~
+\begin{description}
+	\item[Fitness threshold]
+	This condition terminates the execution of the GA once the best (or average) fitness in the population exceeds a set threshold. It is represented by the class \texttt{FitnessThreshold<T>}.
+
+	\item[Maximum number of generations]
+	This condition terminates the execution of the GA after a set number of iterations is performed. It is represented by the class \texttt{MaxNumberOfGenerations<T>}.
+
+	\item[Termination date]
+	This condition terminates the execution of the GA after a set date and time comes to pass. It is represented by the class \texttt{AfterDate<T>}.
+\end{description}
+
+Although every of the listed primitive objects can be used as a stand-alone termination condition, it is desirable to combine primitives using contractions. The library supports three basic contractions based on the fundamental logical operations. They are represented by classes \texttt{NotCondition<T>}, \texttt{AndCondition<T>} and \texttt{OrCondition<T>}. To simplify their usage, the library overloads common Swift Boolean operators \texttt{!}, \texttt{\&\&}, \texttt{||} in order to make them compatible with any descendants of \texttt{TerminationCondition<T>}. This is illustrated in Listing \ref{listing:termination-conditions}.
+
+\begin{listing}[ht]
+	\inputswift{termination-conditions}
+	\caption{Example definitions of termination conditions.}
+	\label{listing:termination-conditions}
+\end{listing}
+
+\subsection{Event Hooks}~\label{section:event-hooks}
+Although the execution of the GA is synchronous on the level of individual runs, the library allows its users to directly respond to certain important events for the purposes of monitoring and logging. This is achieved by the application of a simple event-driven model.
+
+Every event of interest declares a \textit{hook}. Hooks are optional function pointers, which can be set by the users to introduce custom logic into the evaluation scheme. By default, all hooks are unset when the GA is initialized. If the \texttt{DEBUG} macro is defined at the time of compilation, hooks are initialized with functions which print log messages to the standard output. Hooks for the following events are supported:
+~
+\begin{description}
+	\item[Run started]
+	This event occurs after the \texttt{run()} method is called, but before the first population of random individuals is generated. It is represented by the field \texttt{hookRunStarted}.
+
+	\item[Run finished]
+	This event occurs after the termination condition stops the execution of the algorithm, just before the \texttt{run()} method returns. It is represented by the field \texttt{hookRunFinished}.
+
+	\item[Generation advanced]
+	This event occurs after every iteration of the GA. At this point, all individuals are evaluated and values such as the best or average fitness of the generation can be accessed. It is represented by the field \texttt{hookGenerationAdvanced}.
+\end{description}
+
+\section{Extensions}~\label{section:extensions}
+In this section, several important extension functions of the library are described. These extensions are useful in practical applications as they mainly serve auxiliary purposes, easing the operation of the code, which interacts with the library and its components.
+
+The following sections are dedicated to explaining how to enable elitism (Section~\ref{section:elitism}), save chromosomes into persistent storage (Section~\ref{section:persistence}) and how to customize the random generation algorithm used in the GA (Section~\ref{section:entropy-generators}).
+
+\subsection{Elitism}~\label{section:elitism}
+In practical applications, it is desirable to ensure that the quality of the solutions produced by the GA does not decrease over consecutive iterations. If the quality is defined as the highest fitness value of the individuals in the current generation, such effect can be simply achieved by copying the fittest individual from the current generation to the offspring generation before transitioning to the next iteration of the GA. This approach is known as \textit{elitism}.
+
+The library provides a dedicated implementation of elitism represented by the class \texttt{Elitism<T>}, which is a simple restriction of the reproduction operator to the best individuals of the generation. For the best results, it is recommended that the class is directly referenced in the $\alpha$-tree of a genetic algorithm instance.
+
+\subsection{Persistence}~\label{section:persistence}
+To allow continued operation of the GA, the library supports serialization and deserialization of object values. This consequently allows users to persist the state of the GA, terminate their application and restart its execution later on at the same point. Data is serialized into the JavaScript Object Notation format (JSON), which is abstracted by the \texttt{SwiftyJSON} framework, one of the dependencies of the library.
+
+In the code, every type that supports persistence is declared to conform to the \texttt{PersistentType} protocol, which requires it to provide additional encoding and decoding procedures. For user convenience, the majority of types provided by the library already conforms to this protocol. Only those types which are dependent on user subclassing often offer two protocols (or base classes), so that users can ultimately decide whether to support object persistence in accordance with their needs.
+
+A good example of this division can be found in range-initialized arrays. In addition to the protocol \texttt{RangeInitializedArray<T>}, a persistent protocol \texttt{PersistentRangeInitializedArray<T>} is declared. The first protocol is a parent object to the latter. The only difference is that in the persistent version, type \texttt{T} is required to conform to \texttt{PersistentType}. In return, the entire persistent version of the range-initialized array also conforms to \texttt{PersistentType}, delegating serialization calls to its elements.
+
+\subsection{Entropy Generators}~\label{section:entropy-generators}
+Entropy generators are objects used to introduce non-deterministic behavior into the GA. In their essence, they represent a generalization of the conventional pseudo-random number generators (PRNG), extending the range of types produced beyond decimal numbers.
+
+All entropy generators must conform to the \texttt{EntropyGenerator} protocol, which requires types to be capable of generating pseudo-random floating-point decimals in the $[0;1]$ interval. Any type can be randomly generated in a similar way, provided that it conforms to the \texttt{Randomizable} protocol. The library provides such extensions for many Swift primitive types including \texttt{Int}, \texttt{Double}, \texttt{Float}, \texttt{Bool} and enumerations, which can opt into this mechanism by conforming to the \texttt{Discrete} protocol as shown in Listing \ref{listing:discrete-sample}.
+
+The library offers abstractions of random generation mechanisms provided by the standard library, most notably the \texttt{arc4random()} function (represented by \texttt{ArcGenerator}) and the \texttt{drand48()} function (represented by \texttt{DrandGenerator}). In addition, a custom implementation of the Mersenne Twister PRNG has been translated from an existing Python implementation (represented by \texttt{MersenneTwister}).

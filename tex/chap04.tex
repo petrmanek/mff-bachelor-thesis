@@ -1,0 +1,27 @@
+\chapter{Analysis of Previous Works}
+In September 2015, prior to writing this thesis, an online survey of redistributable GA libraries was conducted (this survey is attached in Appendix \ref{appendix:survey}). Its results seemed to suggest that there exist many implementations of GA in historically old programming languages and only a few that are compatible with the new ones, such as Swift. Moreover, implementations in well-established languages offered more specialized features, focusing for instance only on grammar evolution or distributed evaluation, whereas implementations in evolving languages focused more on providing a stable runtime foundation for GA execution.
+
+In Swift, only two working implementations were discovered, one of which was a single-file demonstration application. The other was \textit{Mendel}\footnote{Mendel is available online: \url{https://github.com/saniul/Mendel}}, a small yet highly extensible framework for implementing GA. Although Mendel met the semantic criteria of the survey, one might hesitate to describe it as a robust foundation for developing and executing GA mainly due to its minimalistic design which complies more with the guidelines of functional than object-oriented programming.
+
+\section{Requirements}
+With the survey results in mind, this section states key requirements on the GA library, which is the subject of this thesis.
+~
+\begin{enumerate}
+	\item
+	Divide the GA into separate components in compliance with the defined terms and the referenced literature.
+
+	\item
+	Design an object-oriented model and state requirements and assumptions for every of its components.
+
+	\item 
+	Provide implementation of at least one component of every type, possibly also implementing other frequently used alternatives.
+
+	\item 
+	Allow customization of components by the means of conventional object polymorphism, Swift generics and extensions.
+
+	\item
+	Offer documentation and unit tests of the provided implementation (where applicable).
+
+	\item
+	Create at least three working usage examples of practical application.
+\end{enumerate}

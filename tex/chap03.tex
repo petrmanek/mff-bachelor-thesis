@@ -1,10 +1,14 @@
-\chapter{Usage Demonstration}\label{chapter:usage-demo}
-This chapter contains several demonstrations of the application of the library on practical problems with increasing difficulty. All of the presented examples are included in the library distribution package. To ensure that the mentioned results can be replicated, all instances of genetic algorithms use seeded entropy generators.
+\chapter{Usage Demonstration}~\label{chapter:usage-demo}
+This chapter describes three selected demonstrations of the application of the library on practical problems with increasing difficulty: the MAX-ONE problem (Section~\ref{section:maxone}), a self-driving car simulation (Section~\ref{section:self-driving-car}) and an artificial QWOP game player (Section~\ref{section:qwop-player}).
 
-\section{MAX-ONE Problem}
-The first example is a very trivial problem. It is defined as follows: \textit{Given all bit strings of length between 10 and 100 characters, find the string which maximizes the number of ones.} Although the optimal solution is clearly a string of 100 ones, the simplicity of the problem is ideally suited for demonstration of the individual components of the library.
+All of the presented examples are included in the attached library distribution package. To ensure that the mentioned results can be replicated, all instances of genetic algorithms use seeded entropy generators.
 
-\subsection{Chromosome and Fitness}
+\section{MAX-ONE Problem}~\label{section:maxone}
+The first example is a very trivial problem. It is defined as follows: \textit{Given all bit strings of length between 10 and 100 characters, find the string which maximizes the number of ones.} Although the optimal solution is clearly a string of 100 ones, the simplicity of the problem is ideally suited for a demonstration of the individual components of the library.
+
+The following sections contain a definition of the chromosome data structure and the fitness function for the MAX-ONE problem (Section~\ref{section:maxone-chromosome}), a declaration of the GA itself (Section~\ref{section:maxone-algorithm}) and the results of the algorithm (Section~\ref{section:maxone-results}).
+
+\subsection{Chromosome and Fitness}~\label{section:maxone-chromosome}
 The domain space is a finite set. Its points can be characterized as range-initialized arrays of Boolean values with the initialization interval $[10;100]$, which is declared analogically to the array used in solving the Knapsack Problem (see Listing \ref{listing:array-knapsack}). Since range-initialized arrays already support basic genetic operators, they can be used as chromosomes in the GA.
 
 To evaluate and compare the quality of chromosomes, a fitness function is required. For the purposes of this simple example, the fitness function can be defined as
@@ -21,7 +25,7 @@ where $\{s_i\}_{i=1}^{n}$ are the bits and $n\in[10;100]$ is the length of the c
 	\label{listing:evaluator-sequential-maxone}
 \end{listing}
 
-\subsection{Algorithm}
+\subsection{Algorithm}~\label{section:maxone-algorithm}
 With both the chromosome data structure and the fitness function defined, the only remaining step is to declare and configure the instance of the GA before a run can be started. 
 
 \begin{listing}[ht]
@@ -45,6 +49,7 @@ To clearly explain the syntax of the \texttt{GeneticAlgorithm<T>} class initiali
 	\end{itemize}
 \end{itemize}
 
+\subsection{Results}~\label{section:maxone-results}
 When executed, the presented algorithm performs 757~iterations before reaching the best fitness value~1.0 and yielding the optimal solution consisting of 100~ones. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 5.6~seconds.
 
 To further increase its speed, it is possible to utilize parallelization of fitness evaluation as described in Section \ref{section:parallel-evaluators}. By substituting the line no. 13 of Listing \ref{listing:algorithm-maxone} with \mintinline{swift}{ParallelEvaluator() { _ in MaxOneEvaluator() }}, the library creates a separate evaluator instance for every CPU core, instead of sharing a single instance among all cores.
@@ -78,7 +83,7 @@ After this modification, the number of performed iterations remains the same, ho
 	\label{fig:maxone-fitness}
 \end{figure}
 
-\section{Self-driving Car Simulation}
+\section{Self-driving Car Simulation}~\label{section:self-driving-car}
 The second example can be considered slightly more complex and closer to practical applications than the MAX-ONE Problem. Suppose that there is a robot car capable of navigating in a simulated two-dimensional environment (illustrated by Figure \ref{fig:self-driving-car}) which contains a closed curve resembling a \textit{race track}. The objective is to find a way to steer the car, so that it discovers the track and follows its contour. In real-world applications, this objective would be an analogy to keeping a car or a car-like drone within the bounds of a marked road.
 
 \begin{figure}[ht]
@@ -131,14 +136,16 @@ In all simulations, the environment has square shape with the side equal to 10 k
 
 The race track is non-deterministically generated at the beginning of the simulation. First, 30 to 50 points are chosen within the environment at random. These points are in fact selected from a slightly smaller padded rectangle within the environment bounds in order to prevent the generated track from accidentally leading the car to the edges of the environment. In the next step, the convex hull of the selected set of points is calculated by the Melkman Algorithm. \cite{MelkmanConvexHull} The points of the convex hull are transformed to a Bézier curve by simple interpolation utilizing cubic Catmull-Rom splines. \cite{CatmullRomSplines} Lastly, the thickness of the track curve is increased to 5 meters in order to improve tolerance in subsequent hit-testing.
 
-\subsection{Control Program}
+In the following sections, the control program of the car (Section~\ref{section:car-control-program}), the chromosome data structure and the fitness function (Section~\ref{section:car-chromosome}) are defined. The GA is described in Section~\ref{section:car-algorithm} and its results are discussed in Section~\ref{section:car-results}.
+
+\subsection{Control Program}~\label{section:car-control-program}
 The control program of the car is a dedicated real-time software, which periodically interacts with the event loop of the environment in order to determine the values of control parameters based on the outputs of the on-board detectors.
 
 To demonstrate how the presented library can be used in conjunction with other Swift components, it was decided that the car is to be controlled by a three-layer feedforward neural network with common sigmoid activation function (for definition, see Section \ref{section:neural-networks}). The input layer of the network is comprised of 5 nodes corresponding to binary read-outs of the on-board detectors, the hidden layer contains 10 nodes and the output layer contains 2 nodes which correspond to the control parameters of the car.
 
 While the acceleration parameter is directly equal\footnote{The acceleration parameter is artificially limited to better approximate physical limitations of the car.} to the output of its respective node, the steering parameter uses thresholds to determine the change in heading.
 
-\subsection{Chromosome and Fitness}
+\subsection{Chromosome and Fitness}~\label{section:car-chromosome}
 It is possible to encode the neural network described in the previous section as a real vector from $d$-dimensional space, where $d$ denotes the number of interunit connections and the components of the vector correspond to weight coefficients of such connections. By assuming that all connections between nodes from consecutive layers exist (substituting the weight 0 for non-existing connections), a fixed length of the vector can be ensured. The neural network can thus be characterized by a range-initialized array of real numbers with the initialization interval $[d;d]$. Accounting for 5, 10 and 2 nodes in the input, hidden and output layer respectively along with the bias parameters, $d=6\cdot 10+11\cdot 2=82$.
 
 To evaluate and compare the quality of control programs, a simple simulated test is performed. Prior to the test, a random race track is generated and positioned within the environment. The car is placed in the center of the simulation with random heading and velocity. Since the race track is a closed curve, the car's initial straight-line trajectory intersects it in at least one point. The control program of the car is expected not to interfere significantly with the steering of the car up to this point. However, after reaching it, the control program should take action to prevent the car from leaving the track.
@@ -168,6 +175,7 @@ Clearly, the presented fitness function favors control programs which manage to 
 
 In the evaluator, the control program along with the neural network itself\footnote{The implementation of the FFNN was provided by the \textit{Swift AI} open-source project, which is available online: \url{https://github.com/collinhundley/Swift-AI}} is encapsulated in an instance of the \texttt{NetDriver} type, which is conformant to the \texttt{CarDriver} protocol that formalizes requirements on automated car controllers (not necessarily only those operating with neural networks). Since the evaluator is fully self-contained, it enables parallelization by \texttt{ParallelEvaluator<T>} which was shown in the last example. To visualize the simulation, the \texttt{CarSimulation} initializer can be called in the \textit{verbose}, which automatically generates a MATLAB script capable of displaying animated plot of the car's position in time.
 
+\subsection{Algorithm}~\label{section:car-algorithm}
 The GA declaration is analogous to that used in the MAX-ONE Problem (see Listing \ref{listing:algorithm-maxone}). The GA has been configured with the following properties:
 ~
 \begin{itemize}
@@ -183,6 +191,7 @@ The GA declaration is analogous to that used in the MAX-ONE Problem (see Listing
 	\end{itemize}
 \end{itemize}
 
+\subsection{Results}~\label{section:car-results}
 When executed, the presented algorithm performs 100~iterations, reaching the best fitness value~0.973. Unlike the MAX-ONE algorithm, the convergence rate of the execution is quite high, possibly hinting at suboptimal solution. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 4,2~hours with the parallelization enabled. The convergence of fitness values is plotted in Figure \ref{fig:car-fitness}.
 
 \begin{figure}[ht]
@@ -212,10 +221,14 @@ When executed, the presented algorithm performs 100~iterations, reaching the bes
 	\label{fig:car-fitness}
 \end{figure}
 
-\section{Artificial QWOP Player}
-The third and final usage demonstration of the presented library is closely related to genetic programming techniques shown in \cite{EvolvingQwopGaits}. In the referenced publication, researchers describe their attempts at training artificial programs in playing an online computer game, achieving scores comparable to or exceeding those of human players. This section is dedicated to replicating parts of their results.
+\section{Artificial QWOP Player}~\label{section:qwop-player}
+The third and final usage demonstration of the presented library is closely related to genetic programming techniques shown in \cite{EvolvingQwopGaits}.
 
-\subsection{The QWOP Game}
+In the cited literature, researchers describe their attempts at training artificial programs in playing an online computer game, achieving scores comparable to or exceeding those of human players. This section is dedicated to replicating parts of their results.
+
+In the following sections, the QWOP game is described in detail (Section~\ref{section:qwop-description}) as well as the previous works related to it (Section~\ref{section:qwop-previous-work}). Section~\ref{section:qwop-interface} gives details on the technical caveats of interfacing an existing Java application with the GA programmed in Swift. Lastly, the GA is defined (Section~\ref{section:qwop-algorithm}) and its results are discussed (Section~\ref{section:qwop-results}).
+
+\subsection{The QWOP Game}~\label{section:qwop-description}
 QWOP (shown in Figure \ref{figure:QWOP}) is a popular online game, available for free at Foddy.net. \cite{QwopWebsite} In the game, the player controls movements of an Olympic athlete during a sprint race. The objective is to reach the longest possible distance, terminating at the 100-meter mark. If at any point throughout the race, the head or any of the hands of the athlete come into contact with the ground, the athlete loses his balance, falls and the game is over. The control scheme of QWOP is very simple. By pressing keys Q, W, O, P on the keyboard (hence the name of the game), the player controls movements of different muscle groups within the athlete's body. Keys Q and W move forward the left and the right thighs and keys O and P move backward the left and the right calves respectively.
 
 \begin{figure}[ht]
@@ -227,7 +240,7 @@ QWOP (shown in Figure \ref{figure:QWOP}) is a popular online game, available for
 
 In spite of the simplicity of the game goals and its straightforward control scheme, QWOP is well-known for its notorious difficulty. This is mainly due to its ``ragdoll physics'' engine, which heavily oversimplifies the mechanics of the simulated runner to the point where certain behaviors might seem unintuitive or even unpredictable. \cite{QwopHomework} The biggest challenge of the game can be described as to devise a repeatable strategy to achieve and maintain precise synchronization of key presses, receiving only limited sensory feedback from the game.
 
-\subsection{Previous Work}
+\subsection{Previous Work}~\label{section:qwop-previous-work}
 QWOP has been previously mentioned in several publications, mostly in relation to machine learning. The challenge of the game has been subject of study primarily because of its appearent similarity to the problem of evolving bipedal gaits in physical robots and other cybernetic applications.
 
 To describe QWOP strategies, the authors of \cite{EvolvingQwopGaits} have used string encodings. Since one of these encodings is used\footnote{The used encoding is the \textit{Encoding 1}, which was originally proposed by \cite{QwopEncoding}.} in this demonstration, its definition is included in this section. The encoded strings represent sequences of instructions to the player without any regards to the state of the game. The encoding uses symbols ``\texttt{q,Q,w,W,o,O,p,P,+}''. A capital letter represents pressing the corresponding key on the keyboard, a lowercase letter represents a key release. The ``\texttt{+}'' symbol stands for a delay in which the current state of inputs is maintained for 150 milliseconds. \cite{EvolvingQwopGaits}
@@ -268,7 +281,7 @@ Apart from blindly simulating user inputs, the interpretter component of Qwopper
 
 It is worth noting at this point that Qwopper already has all necessary components to generate, evaluate and recombine QWOP strategy strings on its own. However, for the purpose of demonstration of the GA provided by the presented library, its functions are reduced to only serve as a strategy string evaluation tool.
 
-\subsection{Interfacing Qwopper with Swift}
+\subsection{Interfacing Qwopper with Swift}~\label{section:qwop-interface}
 The encoding defined in the previous section can be simply used in a chromosome data structure. By the use of Swift enumerations and the conformance to the \texttt{Discrete} protocol (for usage example, see Listing \ref{listing:discrete-sample}), QWOP game strategies can be stored in a range-initialized array with the initialization interval $[1;200]$.
 
 To efficiently evaluate different game strategies, it is imperitive that the Qwopper application is capable of communicating with the GA implemented in Swift. For that reason, the main interface of Qwopper has been altered to serve this purpose. Upon execution, the modified version of Qwopper receives three shell parameters:
@@ -305,7 +318,7 @@ In the evaluation of the GA, the execution of Qwopper is represented by a \textt
 ~
 where $d_1,d_2,\dots,d_n$ denote the distances run by the athlete in $n$ individual attempts at executing the strategy by Qwopper. The value $d_{max}=100$ is the maximum achievable distance of a single run. All distances are specified in meters. Since multiple active instances of Qwopper interfere with each other, instances of the \texttt{QwopEvaluator} type do not support parallelization of fitness evaluation shown in the previous demonstrations.
 
-\subsection{Algorithm}
+\subsection{Algorithm}~\label{section:qwop-algorithm}
 Due to the time-consuming nature of fitness evaluation and the lack of parallelization options, the GA for the QWOP runner training has been configured with the following parameters:
 ~
 \begin{itemize}
@@ -322,6 +335,7 @@ Due to the time-consuming nature of fitness evaluation and the lack of paralleli
 	\end{itemize}
 \end{itemize}
 
+\subsection{Results}~\label{section:qwop-results}
 When executed, the presented algorithm performs 38~iterations, reaching the best fitness value~0.224. On the experimental computer\footnote{The experimental computer was Apple Mac mini (model \textit{Late 2012}) with Intel Core i7 CPU (2.3~GHz) and 8~GB RAM (1600~MHz DDR3).}, the evaluation of the algorithm took approximately 18~hours. The convergence of fitness values is plotted in Figure \ref{fig:qwop-fitness}.
 
 \begin{figure}[ht]

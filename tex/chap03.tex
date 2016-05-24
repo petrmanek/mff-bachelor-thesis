@@ -229,7 +229,7 @@ In the cited literature, researchers describe their attempts at training artific
 In the following sections, the QWOP game is described in detail (Section~\ref{section:qwop-description}) as well as the previous works related to it (Section~\ref{section:qwop-previous-work}). Section~\ref{section:qwop-interface} gives details on the technical caveats of interfacing an existing Java application with the GA programmed in Swift. Lastly, the GA is defined (Section~\ref{section:qwop-algorithm}) and its results are discussed (Section~\ref{section:qwop-results}).
 
 \subsection{The QWOP Game}~\label{section:qwop-description}
-QWOP (shown in Figure \ref{figure:QWOP}) is a popular online game, available for free at Foddy.net. \cite{QwopWebsite} In the game, the player controls movements of an Olympic athlete during a sprint race. The objective is to reach the longest possible distance, terminating at the 100-meter mark. If at any point throughout the race, the head or any of the hands of the athlete come into contact with the ground, the athlete loses his balance, falls and the game is over. The control scheme of QWOP is very simple. By pressing keys Q, W, O, P on the keyboard (hence the name of the game), the player controls movements of different muscle groups within the athlete's body. Keys Q and W move forward the left and the right thighs and keys O and P move backward the left and the right calves respectively.
+QWOP (shown in Figure \ref{figure:QWOP}) is a popular online game, available for free at Foddy.net \cite{QwopWebsite}. In the game, the player controls movements of an Olympic athlete during a sprint race. The objective is to reach the longest possible distance, terminating at the 100-meter mark. If at any point throughout the race, the head or any of the hands of the athlete come into contact with the ground, the athlete loses his balance, falls and the game is over. The control scheme of QWOP is very simple. By pressing keys Q, W, O, P on the keyboard (hence the name of the game), the player controls movements of different muscle groups within the athlete's body. Keys Q and W move forward the left and the right thighs and keys O and P move backward the left and the right calves respectively.
 
 \begin{figure}[ht]
 	\centering
@@ -284,7 +284,7 @@ It is worth noting at this point that Qwopper already has all necessary componen
 \subsection{Interfacing Qwopper with Swift}~\label{section:qwop-interface}
 The encoding defined in the previous section can be simply used in a chromosome data structure. By the use of Swift enumerations and the conformance to the \texttt{Discrete} protocol (for usage example, see Listing \ref{listing:discrete-sample}), QWOP game strategies can be stored in a range-initialized array with the initialization interval $[1;200]$.
 
-To efficiently evaluate different game strategies, it is imperitive that the Qwopper application is capable of communicating with the GA implemented in Swift. For that reason, the main interface of Qwopper has been altered to serve this purpose. Upon execution, the modified version of Qwopper receives three shell parameters:
+To efficiently evaluate different game strategies, it is imperative that the Qwopper application is capable of communicating with the GA implemented in Swift. For that reason, the main interface of Qwopper has been altered to serve this purpose. Upon execution, the modified version of Qwopper receives three shell parameters:
 ~
 \begin{description}
 	\item[Strategy string]
@@ -316,7 +316,7 @@ In the evaluation of the GA, the execution of Qwopper is represented by a \textt
 	f(d_1,d_2,\dots,d_n) = \frac{1}{n \cdot d_{max}} \sum_{i=1}^n d_i
 \end{align}
 ~
-where $d_1,d_2,\dots,d_n$ denote the distances run by the athlete in $n$ individual attempts at executing the strategy by Qwopper. The value $d_{max}=100$ is the maximum achievable distance of a single run. All distances are specified in meters. Since multiple active instances of Qwopper interfere with each other, instances of the \texttt{QwopEvaluator} type do not support parallelization of fitness evaluation shown in the previous demonstrations.
+where $d_1,d_2,\dots,d_n$ denote the distances run by the athlete in $n$ individual attempts at executing the strategy by Qwopper. The value $d_{max}=100$ is the maximum achievable distance of a single run. All distances are specified in meters. Since multiple active instances of Qwopper could interfere with each other, instances of the \texttt{QwopEvaluator} type do not support parallelization of fitness evaluation shown in the previous demonstrations.
 
 \subsection{Algorithm}~\label{section:qwop-algorithm}
 Due to the time-consuming nature of fitness evaluation and the lack of parallelization options, the GA for the QWOP runner training has been configured with the following parameters:
@@ -366,7 +366,7 @@ When executed, the presented algorithm performs 38~iterations, reaching the best
 	\label{fig:qwop-fitness}
 \end{figure}
 
-The best strategy of the last generation (shown in Listing \ref{listing:best-strategy}) was capable of controlling the athlete without falling and finishing the 100-meter race in approximately 152 seconds.
+The best strategy of the last generation (shown in Listing \ref{listing:best-strategy}) was capable of controlling the athlete successfully, finishing the 100-meter race in approximately 152 seconds. This result is comparable with those presented in \cite{EvolvingQwopGaits}, where the authors state that one of the best-evolved gaits which used the same encoding achieved the same distance in ``about 2 minutes.''
 
 \begin{listing}[ht]
 	\begin{minted}[frame=lines,

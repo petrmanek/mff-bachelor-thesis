@@ -8,8 +8,7 @@ class GoCommandNode: ActionNode {
     
     override func propagateClone(factory: RandomTreeFactory, 
         mutateNodeId id: Int) -> ActionNode {
-            let clone = GoCommandNode(id: id, maximumDepth: maximumDepth)
             // This node contains no descendants.
-            return clone
+            return GoCommandNode(id: self.id, maximumDepth: self.maximumDepth)
     }
 }

@@ -54,7 +54,7 @@ Both types of nodes are intentionally left abstract, guiding users to define the
 
 \begin{listing}[ht]
 	\inputswift{tree-maze}
-	\caption{Example implementation of the GO command action node.}
+	\caption{Example implementation of the \texttt{GO} command action node.}
 	\label{listing:tree-maze}
 \end{listing}
 
@@ -196,7 +196,7 @@ The reproduction operator mimics the asexual reproduction of natural organisms, 
 
 When applied on the population, the reproduction operator copies arbitrary number of selected chromosomes from the current generation to the next one without any modifications. Since the selection of individuals is independent of the operator implementation, it is technically possible to use any selection object with this operator. Nevertheless, it is worth noting that only fitness-proportionate strategies make sense in this context. A good example of such strategies is \textit{elitism}, which is more thoroughly described in Section \ref{section:elitism}.
 
-Since individuals are immutable by definition, the reproduction operator requires their underlying chromosome data structures to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of their instances.
+Since individuals are immutable by definition, the operator requires their underlying chromosome data structures to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of their instances.
 
 \subsection{Mutation}~\label{section:mutation}
 The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it operates by copying selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The degree of mutation in the chromosomes is static and determined by the implementation. In general, mutated chromosomes can be expected to mostly resemble their original counterparts, yet not be completely identical.
@@ -432,4 +432,4 @@ Entropy generators are objects used to introduce non-deterministic behavior into
 
 All entropy generators must conform to the \texttt{EntropyGenerator} protocol, which requires types to be capable of generating pseudo-random floating-point decimals in the $[0;1]$ interval. Any type can be randomly generated in a similar way, provided that it conforms to the \texttt{Randomizable} protocol. The library provides such extensions for many Swift primitive types including \texttt{Int}, \texttt{Double}, \texttt{Float}, \texttt{Bool} and enumerations, which can opt into this mechanism by conforming to the \texttt{Discrete} protocol as shown in Listing \ref{listing:discrete-sample}.
 
-The library offers abstractions of random generation mechanisms provided by the standard library, most notably the \texttt{arc4random()} function (represented by \texttt{ArcGenerator}) and the \texttt{drand48()} function (represented by \texttt{DrandGenerator}). In addition, a custom implementation of the Mersenne Twister PRNG has been translated from an existing Python implementation (represented by \texttt{MersenneTwister}).
+The library offers abstractions of random generation mechanisms provided by the standard library, most notably the \texttt{arc4random()} function (represented by \texttt{ArcGenerator}) and the \texttt{drand48()} function (represented by \texttt{DrandGenerator}). In addition, an implementation of the Mersenne Twister PRNG has been ported from an existing Python implementation (represented by \texttt{MersenneTwister}).

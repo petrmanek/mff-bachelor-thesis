@@ -1,4 +1,4 @@
-struct KnapsackChromosome: RangeInitializedArray {
+class KnapsackChromosome: RangeInitializedArray {
     typealias Element = Bool
     static let initializationRange = 10...10
     

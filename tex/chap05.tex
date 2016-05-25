@@ -1,7 +1,7 @@
 \chapter{Usage Demonstration}~\label{chapter:usage-demo}
 This chapter describes three selected demonstrations of the application of the library on practical problems with increasing difficulty: the MAX-ONE problem (Section~\ref{section:maxone}), a self-driving car simulation (Section~\ref{section:self-driving-car}) and an artificial QWOP game player (Section~\ref{section:qwop-player}).
 
-All of the presented examples are included in the attached library distribution package. To ensure that the mentioned results can be replicated, all instances of genetic algorithms use seeded entropy generators.
+All of the presented examples (and two additional ones) are included in the attached library distribution package. To ensure that the mentioned results can be replicated, all instances of genetic algorithms use seeded entropy generators.
 
 \section{MAX-ONE Problem}~\label{section:maxone}
 The first example is a very trivial problem. It is defined as follows: \textit{Given all bit strings of length between 10 and 55 characters, find the string which maximizes the number of ones.} Although the optimal solution is clearly a string of 55 ones, the simplicity of the problem is ideally suited for a demonstration of the individual components of the library.
@@ -9,14 +9,15 @@ The first example is a very trivial problem. It is defined as follows: \textit{G
 The following sections contain a definition of the chromosome data structure and the fitness function for the MAX-ONE problem (Section~\ref{section:maxone-chromosome}), a declaration of the GA itself (Section~\ref{section:maxone-algorithm}) and the results of the algorithm (Section~\ref{section:maxone-results}).
 
 \subsection{Chromosome and Fitness}~\label{section:maxone-chromosome}
-The domain space is a finite set. Its points can be characterized as range-initialized arrays of Boolean values with the initialization interval $[10;55]$, which is declared analogically to the array used in solving the Knapsack Problem (see Listing \ref{listing:array-knapsack}). Since range-initialized arrays already support basic genetic operators, they can be used as chromosomes in the GA.
+In this case, the domain space is a finite set. Its points can be characterized as range-initialized arrays of Boolean values with the initialization interval $[10;55]$, which is declared analogically to the array used in solving the Knapsack Problem (see Listing \ref{listing:array-knapsack}). Since range-initialized arrays already support basic genetic operators, they can be used as chromosomes in the GA.
 
 To evaluate and compare the quality of chromosomes, a fitness function is required. For the purposes of this simple example, the fitness function can be defined as
 ~
 \begin{align}
 	f(s_1, s_2, \dots, s_{n}) = \frac{1}{55}\sum_{i=1}^{n} s_i
 \end{align}
-~
+
+\noindent
 where $\{s_i\}_{i=1}^{n}$ are the bits and $n\in[10;55]$ is the length of the chromosome. A simple implementation of a sequential evaluator using this function is shown in Listing \ref{listing:evaluator-sequential-maxone}.
 
 \begin{listing}[ht]
@@ -111,7 +112,7 @@ The second example can be considered slightly more complex and closer to practic
 
 The simulated car is controlled by two parameters: the \textit{steering} and the \textit{acceleration}. Modelled after physical driving control systems like the steering wheel and the accelerator pedal, changes in these parameters cannot influence the heading and the velocity of the car directly. Instead, the control parameters affect car's heading and velocity gradually with respect to the time, behaving more like their first derivatives.
 
-An event loop operates in the simulated environment, evaluating all variables periodically with a sufficient\footnote{For the experiments, the frequency of the event loop has been set to 40 Hz.} frequency. This event loop is responsible for periodically altering the position of the car with respect to its instantaneous velocity and recalculating the instantaneous velocity with respect to the latest value of the acceleration control parameter. A similar process serves to adjust the heading of the car. However, while the acceleration is a continuous decimal parameter with values chosen within a set interval, the steering parameter is fundamentally different, being a discrete choice between set values:
+An event loop operates in the simulated environment, evaluating all variables periodically with a sufficient\footnote{For the experiments, the frequency of the event loop has been set to 40 Hz.} frequency. This event loop is responsible for periodically altering the position of the car with respect to its instantaneous velocity and recalculating the instantaneous velocity with respect to the latest value of the acceleration control parameter. A similar process serves to adjust the heading of the car. However, while the acceleration is a continuous decimal parameter with values chosen within a fixed interval, the steering parameter is fundamentally different, being a discrete choice from the following values:
 ~
 \begin{description}
 	\item[Hard left]
@@ -134,7 +135,7 @@ To recognize the race track in the environment, the robotic car is equipped with
 
 In all simulations, the environment has square shape with the side equal to 10 kilometers. If at any point throughout the simulation the center of the car leaves the bounds of the environment, the simulation terminates. The simulation also ends if set maximum duration is exceeded. The simulated properties of the car (such as dimensions, maximum acceleration, etc.) mimic\footnote{The simulation limits the acceleration and the instantaneous velocity of the car to match the capabilities of its real-world equivalent. However, it is worth noting that the restrictions are exerted unrealistically by clamping numerical values.} those of \textit{Audi R8 5.2 V10 FSI Quattro (model 2010)}.
 
-The race track is non-deterministically generated at the beginning of the simulation. First, 30 to 50 points are chosen within the environment at random. These points are in fact selected from a slightly smaller padded rectangle within the environment bounds in order to prevent the generated track from accidentally leading the car to the edges of the environment. In the next step, the convex hull of the selected set of points is calculated by the Melkman Algorithm. \cite{MelkmanConvexHull} The points of the convex hull are transformed to a Bézier curve by simple interpolation utilizing cubic Catmull-Rom splines. \cite{CatmullRomSplines} Lastly, the thickness of the track curve is increased to 5 meters in order to improve tolerance in subsequent hit-testing.
+The race track is non-deterministically generated at the beginning of the simulation. First, 30 to 50 points are chosen within the environment at random. These points are in fact selected from a slightly smaller padded rectangle within the environment bounds in order to prevent the generated track from accidentally leading the car to the edges of the environment. In the next step, the convex hull of the selected set of points is calculated by the Melkman Algorithm \cite{MelkmanConvexHull}. The points of the convex hull are transformed to a Bézier curve by simple interpolation utilizing cubic Catmull-Rom splines \cite{CatmullRomSplines}. Lastly, the thickness of the track curve is increased to 5 meters in order to improve tolerance in subsequent hit-testing.
 
 In the following sections, the control program of the car (Section~\ref{section:car-control-program}), the chromosome data structure and the fitness function (Section~\ref{section:car-chromosome}) are defined. The GA is described in Section~\ref{section:car-algorithm} and its results are discussed in Section~\ref{section:car-results}.
 
@@ -146,7 +147,7 @@ To demonstrate how the presented library can be used in conjunction with other S
 While the acceleration parameter is directly equal\footnote{The acceleration parameter is artificially limited to better approximate physical limitations of the car.} to the output of its respective node, the steering parameter uses thresholds to determine the change in heading.
 
 \subsection{Chromosome and Fitness}~\label{section:car-chromosome}
-It is possible to encode the neural network described in the previous section as a real vector from $d$-dimensional space, where $d$ denotes the number of interunit connections and the components of the vector correspond to weight coefficients of such connections. By assuming that all connections between nodes from consecutive layers exist (substituting the weight 0 for non-existing connections), a fixed length of the vector can be ensured. The neural network can thus be characterized by a range-initialized array of real numbers with the initialization interval $[d;d]$. Accounting for 5, 10 and 2 nodes in the input, hidden and output layer respectively along with the bias parameters, $d=6\cdot 10+11\cdot 2=82$.
+It is possible to encode the neural network described in the previous section as a real vector from $d$-dimensional space, where $d$ denotes the number of interunit connections and the components of the vector correspond to weight coefficients of such connections. By assuming that all connections between nodes from consecutive layers exist (substituting the weight 0 for non-existing connections), a fixed length of the vector can be ensured. The neural network can thus be characterized by a range-initialized array of real numbers with the initialization interval $[d;d]$. Accounting for 5, 10 and 2 nodes in the input, hidden and output layer, respectively. Along with the bias parameters, $d=6\cdot 10+11\cdot 2=82$.
 
 To evaluate and compare the quality of control programs, a simple simulated test is performed. Prior to the test, a random race track is generated and positioned within the environment. The car is placed in the center of the simulation with random heading and velocity. Since the race track is a closed curve, the car's initial straight-line trajectory intersects it in at least one point. The control program of the car is expected not to interfere significantly with the steering of the car up to this point. However, after reaching it, the control program should take action to prevent the car from leaving the track.
 
@@ -157,12 +158,13 @@ The described test scenario is executed multiple times, in each instance with di
 	\item the maximum duration of the simulation (1 hour) is exceeded.
 \end{enumerate}
 
-A crucial parameter for the calculation of fitness values is the \textit{total distance driven over the race track} (denoted $\hat{d}$). Upon initialization, the distance is set to zero. In every iteration of the event loop, the traveled distance $\Delta d$ is calculated from the instantaneous velocity and the event loop frequency. If the detector located in the middle of the car reports contact with the race track, the calculated distance $\Delta d$ is added to $\hat{d}$, otherwise $\hat{d}$ remains unchanged. Clearly, $\hat{d}$ has only nonnegative values. For the purposes of the simulation, $\hat{d}$ has an upper bound in the distance traveled at the highest allowed velocity for the maximum duration of the simulation, which is $d_{max}=199,980$ m/s. At this point, the fitness function can be defined. The fitness function of the control program is evaluated as
+A crucial parameter for the calculation of fitness values is the \textit{total distance driven over the race track} (denoted $\hat{d}$). Upon initialization, the distance is set to zero. In every iteration of the event loop, the traveled distance $\Delta d$ is calculated from the instantaneous velocity and the event loop frequency. If the detector located in the middle of the car reports contact with the race track, the calculated distance $\Delta d$ is added to $\hat{d}$, otherwise $\hat{d}$ remains unchanged. Clearly, $\hat{d}$ has only nonnegative values. For the purposes of the simulation, $\hat{d}$ has an upper bound in the distance traveled at the highest allowed velocity for the maximum duration of the simulation, which is $d_{max}=199,980$ m. At this point, the fitness function can be defined. The fitness function of the control program is evaluated as
 ~
 \begin{align}
 	f(\hat{d}_1,\hat{d}_2,\dots,\hat{d}_5) = \frac{1}{5 \cdot d_{max}} \sum_{i=1}^5 \hat{d}_i
 \end{align}
-~
+
+\noindent
 where $\hat{d}_1,\hat{d}_2,\dots,\hat{d}_5$ denote the total distances driven over the race track calculated in tests 1 through 5 respectively. All distances are specified in meters.
 
 Clearly, the presented fitness function favors control programs which manage to keep the car on the track more than programs which do not follow it very well or veer off it eventually. In addition, since the function operates on distances, control programs are motivated to discover the race track as quickly as possible and to maximize the distance traveled over it. An implementation of a sequential evaluator using this function is illustrated in Listing \ref{listing:evaluator-sequential-car}.
@@ -186,7 +188,7 @@ The GA declaration is analogous to that used in the MAX-ONE Problem (see Listing
 	~
 	\begin{itemize}
 		\item With the probability 0.8, apply the reproduction operator on a random individual.
-		\item With the probability 0.8, apply the mutation operator on an individual selected by the roulette selection.
+		\item With the probability 0.1, apply the mutation operator on an individual selected by the roulette selection.
 		\item With the probability 0.1, apply the one-point crossover operator on the winners of two randomized tournaments, each containing five contestants.
 	\end{itemize}
 \end{itemize}
@@ -238,12 +240,12 @@ QWOP (shown in Figure \ref{figure:QWOP}) is a popular online game, available for
 	\label{figure:QWOP}
 \end{figure}
 
-In spite of the simplicity of the game goals and its straightforward control scheme, QWOP is well-known for its notorious difficulty. This is mainly due to its ``ragdoll physics'' engine, which heavily oversimplifies the mechanics of the simulated runner to the point where certain behaviors might seem unintuitive or even unpredictable. \cite{QwopHomework} The biggest challenge of the game can be described as to devise a repeatable strategy to achieve and maintain precise synchronization of key presses, receiving only limited sensory feedback from the game.
+In spite of the simplicity of the game goals and its straightforward control scheme, QWOP is well-known for its notorious difficulty. This is mainly due to its ``ragdoll physics'' engine, which heavily oversimplifies the mechanics of the simulated runner to the point where certain behaviors might seem unintuitive or even unpredictable \cite{QwopHomework}. The biggest challenge of the game can be described as to devise a repeatable strategy to achieve and maintain precise synchronization of key presses, receiving only limited sensory feedback from the game.
 
 \subsection{Previous Work}~\label{section:qwop-previous-work}
 QWOP has been previously mentioned in several publications, mostly in relation to machine learning. The challenge of the game has been subject of study primarily because of its appearent similarity to the problem of evolving bipedal gaits in physical robots and other cybernetic applications.
 
-To describe QWOP strategies, the authors of \cite{EvolvingQwopGaits} have used string encodings. Since one of these encodings is used\footnote{The used encoding is the \textit{Encoding 1}, which was originally proposed by \cite{QwopEncoding}.} in this demonstration, its definition is included in this section. The encoded strings represent sequences of instructions to the player without any regards to the state of the game. The encoding uses symbols ``\texttt{q,Q,w,W,o,O,p,P,+}''. A capital letter represents pressing the corresponding key on the keyboard, a lowercase letter represents a key release. The ``\texttt{+}'' symbol stands for a delay in which the current state of inputs is maintained for 150 milliseconds. \cite{EvolvingQwopGaits}
+To describe QWOP strategies, the authors of \cite{EvolvingQwopGaits} have used string encodings. Since one of these encodings is used\footnote{The used encoding is the \textit{Encoding 1}, which was originally proposed by \cite{QwopEncoding}.} in this demonstration, its definition is included in this section. The encoded strings represent sequences of instructions to the player without any regards to the state of the game. The encoding uses symbols ``\texttt{q,Q,w,W,o,O,p,P,+}''. A capital letter represents pressing the corresponding key on the keyboard, a lowercase letter represents a key release. The ``\texttt{+}'' symbol stands for a delay in which the current state of inputs is maintained for 150 milliseconds \cite{EvolvingQwopGaits}.
 
 Upon interpretation, the encoded string is read from the left to the right, executing one instruction at a time. When the end of the string is reached, the interpretation starts again from the beginning. An example of a strategy encoded in this way is shown in Listing \ref{listing:encoding-example}.
 
@@ -260,11 +262,11 @@ QO+qPW+wpo+QPW+wO+qp+P+Q+++qp+QPW+wo+qp+POQ+q+W+Qp+qwo
 To consistently interpret QWOP strategies encoded into strings, the authors of \cite{EvolvingQwopGaits} have used automated Java program called the \textit{Qwopper}, which has been originally developed by \cite{QwopEncoding}. The application is comprised of three components:
 ~
 \begin{description}
-	\item[Strategy interpretter]
-	The interpretter is responsible for creating artificial user inputs for the QWOP game in compliance with a given strategy string.
+	\item[Strategy interpreter]
+	The interpreter is responsible for creating artificial user inputs for the QWOP game in compliance with a given strategy string.
 
 	\item[Control interface]
-	The control interface is a user application, which serves users to configure and test the interpretter.
+	The control interface is a user application, which serves users to configure and test the interpreter.
 
 	\item[GA engine]
 	By default, Qwopper includes its own implementation of the GA, which has been used to produce strings by means of genetic programming.
@@ -315,7 +317,8 @@ In the evaluation of the GA, the execution of Qwopper is represented by a \textt
 \begin{align}
 	f(d_1,d_2,\dots,d_n) = \frac{1}{n \cdot d_{max}} \sum_{i=1}^n d_i
 \end{align}
-~
+
+\noindent
 where $d_1,d_2,\dots,d_n$ denote the distances run by the athlete in $n$ individual attempts at executing the strategy by Qwopper. The value $d_{max}=100$ is the maximum achievable distance of a single run. All distances are specified in meters. Since multiple active instances of Qwopper could interfere with each other, instances of the \texttt{QwopEvaluator} type do not support parallelization of fitness evaluation shown in the previous demonstrations.
 
 \subsection{Algorithm}~\label{section:qwop-algorithm}

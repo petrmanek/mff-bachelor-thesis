@@ -165,7 +165,8 @@ To demonstrate implementation of a simple sequential evaluator, recall the chrom
 		\hfill \sum_{i=1}^{10} c_i v_i / \sum_{i=1}^{10} v_i \hfill & \text{ otherwise} \\
 	\end{cases}
 \end{align}
-~
+
+\noindent
 where $S_{max}$ represents the maximum capacity of the knapsack, $\{s_i\}_{i=1}^{10}$ are sizes of things, $\{v_i\}_{i=1}^{10}$ are values of things and $\{c_i\}_{i=1}^{10}$ are 0/1 coefficients generated from the Boolean values of the chromosome. A simple implementation of a sequential evaluator using this function is shown in Listing \ref{listing:evaluator-sequential}.
 
 \begin{listing}[ht]

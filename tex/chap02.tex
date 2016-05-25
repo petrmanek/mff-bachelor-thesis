@@ -37,7 +37,7 @@ To initialize the GA, a \textit{population} of individuals with random chromosom
 	    \node [decision, below of=evaluate2] (termination) {Should terminate?};
 	    \node [block, below of=termination, node distance=2cm] (reset) {Reset\\offspring.};
 	    \node [block, right of=termination, node distance=3cm] (stop) {Terminate.};
-	    \node [decision, below of=reset] (enough) {Have enough offpring?};
+	    \node [decision, below of=reset] (enough) {Have enough offspring?};
 
 	    \node [block, below of=enough, node distance=2.3cm] (operator) {Choose genetic operator.};
 	    \node [block, left of=enough, node distance=3cm] (evaluate) {Evaluate\\offspring.};
@@ -62,12 +62,14 @@ To initialize the GA, a \textit{population} of individuals with random chromosom
 	\label{fig:genetic-flowchart}
 \end{figure}
 
-Although there are many variants of GA, each with different properties and applications, the basic notion stays the same. Genetic algorithms iteratively evaluate and modify a population of chromosomes until a set \textit{termination condition} met. This condition can for instance ascertain the fitness of the best chromosome so far or simply count the number of iterations performed. Individuals are inserted in the population at two instances throughout the execution of the GA: first during the initialization when a random population is generated, and second when the population is modified to prepare grounds for the next iteration. The latter of the two is the key phase of the GA. At this point in execution, the algorithm explores new points of the domain space by reusing points which have already been discovered. Such process is often based on non-deterministic inputs and can utilize the fitness of the chromosomes discovered so far as a heuristic. Instances of this process are referred to as \textit{genetic operators}.
+Although there are many variants of GA, each with different properties and applications, the basic notion stays the same. Genetic algorithms iteratively evaluate and modify a population of chromosomes until a set \textit{termination condition} is met. This condition can for instance ascertain the fitness of the best chromosome so far or simply count the number of iterations performed. Individuals are inserted in the population at two instances throughout the execution of the GA: first during the initialization when a random population is generated, and second when the population is modified to prepare grounds for the next iteration. The latter of the two is the key phase of the GA. At this point in execution, the algorithm explores new points of the domain space by reusing points which have already been discovered. Such process is often based on non-deterministic inputs and can utilize the fitness of the chromosomes discovered so far as a heuristic. Instances of this process are referred to as \textit{genetic operators}.
 
-The \textit{selection pressure} is the degree to which the better individuals are favored: the higher the selection pressure, the more the better individuals are favored. This selection pressure drives the GA to improve the population fitness over succeeding generations. However, if the selection pressure is too low, the convergence rate will be slow, and the GA will unnecessarily take longer to find the optimal solution. If the selection pressure is too high, there is an increased chance of the genetic algorithm prematurely converging to an incorrect (suboptimal) solution. \cite{GaTournamentSelection}
+The \textit{selection pressure} is the degree to which the better individuals are favored: the higher the selection pressure, the more the better individuals are favored. This selection pressure drives the GA to improve the population fitness over succeeding generations. However, if the selection pressure is too low, the convergence rate will be slow, and the GA will unnecessarily take longer to find the optimal solution. If the selection pressure is too high, there is an increased chance of the genetic algorithm prematurely converging to an incorrect (suboptimal) solution \cite{GaTournamentSelection}.
 
 \section{Neural Networks}\label{section:neural-networks}
-A neural network is an interconnected assembly of simple processing elements, \textit{units} or \textit{nodes}, whose functionality is loosely based on the animal neuron. The processing ability of the network is stored in the interunit connection strengths, or \textit{weights}, obtained by a process of adaptation to, or \textit{learning} from a set of training patterns. \cite{NeuralNets}
+Neural networks are often used in conjunction with genetic algorithms for solving challenging tasks. A neural network can, e.g., represent a complex function used for predicting time series or for controlling complex systems. For instance, in Section~\ref{section:self-driving-car}, a neural network is responsible for controlling an autonomous robot. This section serves to describe one model of neural networks which is used later in this thesis.
+
+A neural network is an interconnected assembly of simple processing elements, \textit{units} or \textit{nodes}, whose functionality is loosely based on an animal neuron. The processing ability of the network is stored in the interunit connection strengths, or \textit{weights}, obtained by a process of adaptation to, or \textit{learning} from a set of training patterns \cite{NeuralNets}.
 
 A neural network is called \textit{feedforward} (denoted FFNN), if its interunit connections do not form a cycle. In such case, it makes sense to classify its nodes in separate \textit{layers} with respect to their topological ordering. The first layer of the network is customarily called the \textit{input layer}, whereas the last layer is called the \textit{output layer}. The remaining layers are referred to as the \textit{hidden layers}. This is illustrated in Figure \ref{fig:FFNN}.
 
@@ -127,7 +129,8 @@ The process of calculating the output of a single node with respect to its input
 \begin{align}
 	y = f\left(b+\sum_{i=1}^n w_i x_i\right)
 \end{align}
-~
+
+\noindent
 where $\{x_i\}_{i=1}^n$ denote the input values, $\{w_i\}_{i=1}^n$ denote the interunit connection weights, $b$ denotes the \textit{bias parameter} of the node and $f$ denotes the \textit{activation function}. The combination of all these parameters is illustrated in Figure \ref{fig:neuron-combination}.
 
 \begin{figure}[ht]

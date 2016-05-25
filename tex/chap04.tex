@@ -6,7 +6,7 @@ The overall architecture of the library is based on generics and object polymorp
 The following sections define the object types representing chromosome data structures (Section~\ref{section:chromosomes}), population evaluators (Section~\ref{section:evaluation}), genetic operators (Section~\ref{section:genetic-operators}), selection objects (Section~\ref{section:selection}), termination conditions and event handlers (Section~\ref{section:execution}) and extensions (Section~\ref{section:extensions}).
 
 \section{Chromosomes}~\label{section:chromosomes}
-In the context of GA, a \textit{chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem. \cite{GaPracticalHandbook} Within the library, chromosomes can be represented by any reference types, which conform to the \texttt{ChromosomeType} protocol. This protocol requires them to
+In the context of GA, a \textit{chromosome} (also known as \textit{genotype}) is a piece of information describing a solution to a problem \cite{GaPracticalHandbook}. Within the library, chromosomes can be represented by any reference types, which conform to the \texttt{ChromosomeType} protocol. This protocol requires them to
 ~
 \begin{enumerate}
 	\item be immutable,\footnote{This is a semantical requirement implying that every chromosome modification will require a new instance of the type to be created.}
@@ -199,7 +199,7 @@ When applied on the population, the reproduction operator copies arbitrary numbe
 Since individuals are immutable by definition, the operator requires their underlying chromosome data structures to conform to the \texttt{Reproducible} protocol in order to work properly. This protocol is a simple extension of the \texttt{Copyable} protocol, which requires types to be capable of producing deep copies of their instances.
 
 \subsection{Mutation}~\label{section:mutation}
-The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity. \cite{Koza1992} It is fundamentally similar to the reproduction operator, as it operates by copying selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The degree of mutation in the chromosomes is static and determined by the implementation. In general, mutated chromosomes can be expected to mostly resemble their original counterparts, yet not be completely identical.
+The mutation operator serves the desirable function of introducing occasional variety into a population and restoring its lost diversity (see \cite{Koza1992}). It is fundamentally similar to the reproduction operator, as it operates by copying selected chromosomes from the current generation to the next one. However before copying, the chromosomes are modified in a non-deterministic way (i.e. mutated), imitating random transcription errors during replication of genetic information in the nature. The degree of mutation in the chromosomes is static and determined by the implementation. In general, mutated chromosomes can be expected to mostly resemble their original counterparts, yet not be completely identical.
 
 In order to be used in the GA, the mutation operator requires chromosome data structures to conform to the \texttt{Mutable} protocol. Every container can thus have its own, slightly different implementation of mutation, which should be defined in its documentation. General guidelines for implementing mutation are:
 ~
@@ -282,7 +282,7 @@ As input, selection objects receive three parameters from their genetic operator
 Similarly to genetic operators, the library offers the implementation of common selections: \textit{roulette selection} (Section~\ref{section:roulette-selection}), \textit{rank selection} (Section~\ref{section:rank-selection}), \textit{tournament selection} (Section~\ref{section:tournament-selection}) and several others (Section~\ref{section:miscellaneous}). In addition, the library allows its users to customize the behavior of selections, possibly creating their own subclasses (Section~\ref{section:custom-selection}).
 
 \subsection{Roulette Selection}~\label{section:roulette-selection}
-Roulette selection is one of the most basic fitness-proportionate selection methods used in the GA. When applied, each chromosome is assigned a normalized probability proportional to its current fitness value. Based on the assigned probabilities, a random generator then selects chromosomes from a discrete non-uniform distribution. This process can be likened to a spin of unfair roulette wheel, where every chromosome is allocated a sector with angle proportional to its fitness. \cite{GaConceptsDesigns}
+Roulette selection is one of the most basic fitness-proportionate selection methods used in the GA. When applied, each chromosome is assigned a normalized probability proportional to its current fitness value. Based on the assigned probabilities, a random generator then selects chromosomes from a discrete non-uniform distribution. This process can be likened to a spin of unfair roulette wheel, where every chromosome is allocated a sector with angle proportional to its fitness \cite{GaConceptsDesigns}.
 
 The application of this method can be shown on a simple example. Suppose that there are four chromosomes with fitness values 0.05, 0.4, 0.8 and 0.1. In order to generate a distribution, the roulette selection method merely normalizes fitness values to sum up to 1. Chromosomes are therefore assigned probabilities 0.04, 0.3, 0.59 and 0.07 respectively.
 
@@ -296,7 +296,7 @@ To resolve these cases, rank selection first sorts all chromosomes by their curr
 In the library, rank selection is represented by the \texttt{RankSelection} class, which has no arguments and can be combined with any genetic operator.
 
 \subsection{Tournament Selection}~\label{section:tournament-selection}
-Tournament selection provides selection pressure by holding a tournament among $s$ competitors, with $s$ being the tournament size (or order). The winner of the tournament is the chromosome with the highest fitness of the $s$ tournament competitors. \cite{GaTournamentSelection}
+Tournament selection provides selection pressure by holding a tournament among $s$ competitors, with $s$ being the tournament size (or order). The winner of the tournament is the chromosome with the highest fitness of the $s$ tournament competitors \cite{GaTournamentSelection}.
 
 The library contains implementation of tournament selection, where competitors are chosen from the population by another selection object. By default, this secondary selection is random. However, by changing this argument, users can customize the behavior of the tournament selection significantly.
 

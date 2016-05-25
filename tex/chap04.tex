@@ -233,10 +233,6 @@ Depending on the number and size of interchanged parts, multiple classes of cros
 	In analogous way to the one-point crossover, two points are randomly chosen to divide both arrays in three parts. The middle pair of parts is swapped between the chromosomes, whereas the remaining two pairs are left unmodified. This crossover is represented by the protocol \texttt{TwoPointCrossoverable}.
 \end{description}
 
-For tree node structures, crossover is implemented by selecting two random subtrees rooted in nodes, which are descendants of matching fundamental base classes. The execution of the operator is performed by swapping pointers to both subtrees. This crossover is represented by the protocol \texttt{TreeCrossoverable}.
-
-%todo: implementovat tree crossover
-
 \subsection{Custom Operators}~\label{section:custom-operators}
 By creating descendants of the generic abstract class \texttt{GeneticOperator<T>}, users are free to implement and experiment with any genetic operators of their own. This section gives details and recommendations on implementing such subclasses.
 
@@ -402,6 +398,15 @@ Every event of interest declares a \textit{hook}. Hooks are optional function po
 
 	\item[Generation advanced]
 	This event occurs after every iteration of the GA. At this point, all individuals are evaluated and values such as the best or average fitness of the generation can be accessed. It is represented by the field \texttt{hookGenerationAdvanced}.
+
+	\item[Evaluation started]
+	This event occurs after a new population of individuals is created, but before the evaluator object is called. It is represented by the field \texttt{hookEvaluationStarted}.
+
+	\item[Individual evaluated]
+	This event occurs after a single individual in the population was evaluated. It is represented by the field \texttt{hookEvaluationFinished}.
+
+	\item[Evaluation finished]
+	This event occurs after all individuals in the population were evaluated. It is represented by the field \texttt{hookEvaluationFinished}.
 \end{description}
 
 \section{Extensions}~\label{section:extensions}
